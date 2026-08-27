@@ -7,17 +7,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
 const contactSchema = z.object({
-  name: z.string().min(2, "First name is mandatory"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  email: z.string().email("Please enter a valid email address"),
-  message: z.string().optional(),
+  name: z.string().trim().min(1, "First name is required"),
+  phone: z.string().trim().min(5, "Please enter a valid phone number"),
+  email: z.string().trim().email("Please enter a valid email address"),
+  message: z.string().trim().min(1, "Message is required"),
 });
 
 type ContactFormValues = {
   name: string;
   phone: string;
   email: string;
-  message?: string;
+  message: string;
 };
 
 export default function ContactForm() {
@@ -50,15 +50,20 @@ export default function ContactForm() {
 
       if (json.success) {
         setSubmitStatus("success");
-        setStatusMessage(json.message || "Thank you for reaching out!");
+        setStatusMessage(
+          json.message ||
+            "Thank you for contacting Monk Podcast Studio. Your message has been received successfully. We will contact you soon."
+        );
         reset();
       } else {
         setSubmitStatus("error");
-        setStatusMessage(json.message || "Something went wrong. Please try again.");
+        setStatusMessage(
+          json.message || "Unable to submit your message right now. Please try again."
+        );
       }
     } catch {
       setSubmitStatus("error");
-      setStatusMessage("Something went wrong. Please try again.");
+      setStatusMessage("Unable to submit your message right now. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -256,6 +261,9 @@ export default function ContactForm() {
             }}
             disabled={isSubmitting}
           />
+          {errors.message && (
+            <p className="mt-1 text-red-500 text-xs">{errors.message.message}</p>
+          )}
         </div>
 
         {/* Error status */}

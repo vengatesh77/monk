@@ -627,6 +627,8 @@ export default function AdminPage() {
                     <thead>
                       <tr className="bg-gray-50 text-left">
                         <th className="px-5 py-3 font-semibold text-[#56585e]">#</th>
+                        <th className="px-5 py-3 font-semibold text-[#56585e]">Name</th>
+                        <th className="px-5 py-3 font-semibold text-[#56585e]">Contact Number</th>
                         <th className="px-5 py-3 font-semibold text-[#56585e]">Email</th>
                         <th className="px-5 py-3 font-semibold text-[#56585e]">Subscribed On</th>
                       </tr>
@@ -634,7 +636,7 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-gray-50">
                       {newsletter.length === 0 ? (
                         <tr>
-                          <td colSpan={3} className="text-center py-12 text-[#56585e]">
+                          <td colSpan={5} className="text-center py-12 text-[#56585e]">
                             No subscribers yet
                           </td>
                         </tr>
@@ -642,6 +644,8 @@ export default function AdminPage() {
                         newsletter.map((n, idx) => (
                           <tr key={n._id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-5 py-4 text-[#56585e]">{idx + 1}</td>
+                            <td className="px-5 py-4 text-[#56585e]">{n.name || "-"}</td>
+                            <td className="px-5 py-4 text-[#56585e]">{n.contactNumber || "-"}</td>
                             <td className="px-5 py-4 font-medium text-[#0d141a]">{n.email}</td>
                             <td className="px-5 py-4 text-[#56585e]">
                               {new Date(n.createdAt).toLocaleDateString("en-IN")}

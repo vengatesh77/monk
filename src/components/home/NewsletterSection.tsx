@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
 export default function NewsletterSection() {
+  const [name, setName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
@@ -20,7 +22,7 @@ export default function NewsletterSection() {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ name, contactNumber, email }),
       });
 
       const data = await res.json();
@@ -28,6 +30,8 @@ export default function NewsletterSection() {
       if (data.success) {
         setStatus("success");
         setMessage("Thank you for reaching out!");
+        setName("");
+        setContactNumber("");
         setEmail("");
       } else {
         setStatus("error");
@@ -61,6 +65,46 @@ export default function NewsletterSection() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="text-left">
+                  <label
+                    htmlFor="newsletter-name"
+                    className="block text-sm font-semibold text-[#0d141a] mb-2"
+                  >
+                    Your Name
+                  </label>
+                  <input
+                    id="newsletter-name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your name"
+                    required
+                    disabled={isLoading}
+                    className="w-full bg-white border border-[#dadce0] rounded-xl px-4 py-3.5 text-sm text-[#0d141a] placeholder:text-gray-400 focus:outline-none focus:border-[#0d141a] focus:ring-1 focus:ring-[#0d141a] transition-all"
+                  />
+                </div>
+
+                <div className="text-left">
+                  <label
+                    htmlFor="newsletter-contact"
+                    className="block text-sm font-semibold text-[#0d141a] mb-2"
+                  >
+                    Your Contact Number
+                  </label>
+                  <input
+                    id="newsletter-contact"
+                    type="tel"
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    placeholder="Enter your contact number"
+                    required
+                    disabled={isLoading}
+                    className="w-full bg-white border border-[#dadce0] rounded-xl px-4 py-3.5 text-sm text-[#0d141a] placeholder:text-gray-400 focus:outline-none focus:border-[#0d141a] focus:ring-1 focus:ring-[#0d141a] transition-all"
+                  />
+                </div>
+              </div>
+
               <div className="text-left">
                 <label
                   htmlFor="newsletter-email"
@@ -82,7 +126,7 @@ export default function NewsletterSection() {
 
               <button
                 type="submit"
-                disabled={isLoading || !email}
+                disabled={isLoading || !email || !name || !contactNumber}
                 className="w-full bg-[#0d141a] hover:bg-black text-white font-medium py-3.5 px-8 rounded-full text-sm shadow-sm transition-all duration-300 disabled:opacity-60 cursor-pointer min-h-[48px]"
                 id="newsletter-submit-btn"
               >

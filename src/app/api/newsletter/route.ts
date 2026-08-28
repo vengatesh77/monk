@@ -4,6 +4,8 @@ import Newsletter from "@/models/Newsletter";
 import { z } from "zod";
 
 const newsletterSchema = z.object({
+  name: z.string().optional(),
+  contactNumber: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
 });
 

@@ -4,14 +4,37 @@ import Image from "next/image";
 import { useState } from "react";
 
 export default function ServicesPage() {
+  const [name, setName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setSubmitted(true);
-      setEmail("");
+    if (!email || isLoading) return;
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, contactNumber, email }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setSubmitted(true);
+        setName("");
+        setContactNumber("");
+        setEmail("");
+      }
+    } catch {
+      // Handle error quietly or keep existing state
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -380,6 +403,76 @@ export default function ServicesPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="text-left space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#ffffff",
+                      marginBottom: "8px",
+                      fontFamily: "'Montserrat', sans-serif",
+                    }}
+                  >
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    disabled={isLoading}
+                    placeholder="Enter your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "16px 20px",
+                      borderRadius: "10px",
+                      border: "1px solid #dadce0",
+                      background: "#ffffff",
+                      color: "#0d141a",
+                      fontSize: "16px",
+                      outline: "none",
+                      fontFamily: "'Montserrat', sans-serif",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#ffffff",
+                      marginBottom: "8px",
+                      fontFamily: "'Montserrat', sans-serif",
+                    }}
+                  >
+                    Your Contact Number
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    disabled={isLoading}
+                    placeholder="Enter your contact number"
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "16px 20px",
+                      borderRadius: "10px",
+                      border: "1px solid #dadce0",
+                      background: "#ffffff",
+                      color: "#0d141a",
+                      fontSize: "16px",
+                      outline: "none",
+                      fontFamily: "'Montserrat', sans-serif",
+                    }}
+                  />
+                </div>
+              </div>
+
               <div>
                 <label
                   style={{
@@ -396,6 +489,7 @@ export default function ServicesPage() {
                 <input
                   type="email"
                   required
+                  disabled={isLoading}
                   placeholder="Enter your email here"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -416,6 +510,7 @@ export default function ServicesPage() {
               <div className="text-center pt-2">
                 <button
                   type="submit"
+                  disabled={isLoading || !email || !name || !contactNumber}
                   style={{
                     background: "transparent",
                     border: "none",
@@ -426,9 +521,9 @@ export default function ServicesPage() {
                     fontFamily: "'Montserrat', sans-serif",
                     textDecoration: "none",
                   }}
-                  className="hover:underline"
+                  className="hover:underline disabled:opacity-60"
                 >
-                  Send Your Message
+                  {isLoading ? "Submitting..." : "Send Your Message"}
                 </button>
               </div>
             </form>

@@ -20,6 +20,8 @@ export interface BookingFormData {
 }
 
 export interface NewsletterFormData {
+  name?: string;
+  contactNumber?: string;
   email: string;
 }
 
@@ -52,6 +54,8 @@ export interface BookingRecord {
 
 export interface NewsletterRecord {
   _id: string;
+  name?: string;
+  contactNumber?: string;
   email: string;
   createdAt: string;
 }

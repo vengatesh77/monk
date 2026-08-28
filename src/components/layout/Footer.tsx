@@ -1,55 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, CheckCircle2 } from "lucide-react";
-
 export default function Footer() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || isLoading) return;
-
-    setIsLoading(true);
-    setStatus("idle");
-
-    try {
-      const res = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setStatus("success");
-        setEmail("");
-      } else {
-        setStatus("error");
-      }
-    } catch {
-      setStatus("error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
-    <footer className="bg-[#1A1A1A] text-white pt-16 pb-14 border-t border-gray-800">
-      <div className="container-custom max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-14">
-          {/* Column 1: Explore (4 cols) */}
-          <div className="md:col-span-4 space-y-5">
-            <h5 className="text-2xl font-bold text-white tracking-tight">Explore</h5>
-            <p className="text-white text-sm md:text-base leading-relaxed max-w-xs">
+    <footer className="bg-[#1A1A1A] text-white pt-16 pb-16 border-t border-gray-800">
+      <div className="container-custom max-w-5xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+          {/* Column 1: Explore */}
+          <div className="space-y-6">
+            <h5 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Explore</h5>
+            <p className="text-white text-sm sm:text-base leading-relaxed max-w-sm">
               Turning your ideas into impactful podcasts and stories.
             </p>
 
             {/* Instagram Icon */}
-            <div className="pt-1 pb-1">
+            <div className="pt-2">
               <a
                 href="https://www.instagram.com/monkpodcaststudio?igsh=MWl1bGRvems3ZWdjcw=="
                 target="_blank"
@@ -63,7 +27,7 @@ export default function Footer() {
               </a>
             </div>
 
-            <p className="text-white text-sm pt-1">
+            <p className="text-white text-sm sm:text-base pt-1">
               <a
                 href="https://monkpodcaststudio.in"
                 className="hover:underline transition-all"
@@ -73,79 +37,32 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Column 2: CONNECT (4 cols) */}
-          <div className="md:col-span-4 space-y-4">
+          {/* Column 2: CONNECT */}
+          <div className="space-y-4">
             <h6 className="text-sm font-bold tracking-widest uppercase text-white">
               CONNECT
             </h6>
 
             <div className="space-y-3 pt-1">
-              <p className="text-white text-sm md:text-base">
+              <p className="text-white text-sm sm:text-base">
                 <a href="tel:+919080644504" className="hover:text-gray-300 transition-colors">
                   +91 90806 44504
                 </a>
               </p>
 
-              <p className="text-white text-sm md:text-base">
+              <p className="text-white text-sm sm:text-base">
                 <a href="mailto:monkstudio2025@gmail.com" className="hover:text-gray-300 transition-colors">
                   monkstudio2025@gmail.com
                 </a>
               </p>
 
-              <div className="text-white text-sm md:text-base leading-relaxed pt-2 space-y-1">
+              <div className="text-white text-sm sm:text-base leading-relaxed pt-3 space-y-1">
                 <p>3rd Floor, Sasha Building,</p>
                 <p>130 E. Venkatasamy Road,</p>
                 <p>R.S. Puram, Coimbatore – 641002,</p>
                 <p>Tamil Nadu, India.</p>
               </div>
             </div>
-          </div>
-
-          {/* Column 3: INSPIRE (4 cols) */}
-          <div className="md:col-span-4 space-y-4">
-            <h6 className="text-sm font-bold tracking-widest uppercase text-white">
-              INSPIRE
-            </h6>
-
-            {status === "success" ? (
-              <div className="flex items-center gap-2 text-green-400 text-sm py-4">
-                <CheckCircle2 className="w-5 h-5 shrink-0" />
-                <span>Thank you for reaching out!</span>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-                <div>
-                  <label
-                    htmlFor="footer-email"
-                    className="block text-sm font-semibold text-white mb-2"
-                  >
-                    Your Email Address
-                  </label>
-                  <input
-                    id="footer-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email here"
-                    required
-                    disabled={isLoading}
-                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-[#0d141a] placeholder:text-gray-400 focus:outline-none focus:border-white transition-all"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading || !email}
-                  className="bg-[#3C3C3C] hover:bg-[#2A2A2A] text-white font-medium py-3 px-8 rounded-full text-sm shadow-sm transition-all disabled:opacity-60 cursor-pointer min-h-[44px] inline-flex items-center justify-center"
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    "Submit Your Inquiry"
-                  )}
-                </button>
-              </form>
-            )}
           </div>
         </div>
       </div>

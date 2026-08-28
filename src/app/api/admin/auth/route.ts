@@ -2,29 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-// POST /api/admin/auth — Validate admin credentials (server-side only)
+// POST /api/admin/auth — Validate admin password (server-side only)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password } = body;
+    const { password } = body;
 
-    if (!email || !password) {
+    if (!password) {
       return NextResponse.json(
-        { success: false, message: "Email and password are required" },
+        { success: false, message: "Password is required." },
         { status: 400 }
       );
     }
 
-    const inputEmail = email.toString().trim().toLowerCase();
     const inputPassword = password.toString().trim();
-
-    const envEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
     const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
-
-    const isEmailValid =
-      inputEmail === "monkpodcast@gmail.com" ||
-      inputEmail === "monkpodcast" ||
-      (envEmail !== "" && inputEmail === envEmail);
 
     const isPasswordValid =
       inputPassword === "Monk@1234" ||
@@ -32,9 +24,9 @@ export async function POST(req: NextRequest) {
       inputPassword === "MonkAdmin@2025" ||
       (envPassword !== "" && inputPassword === envPassword);
 
-    if (!isEmailValid || !isPasswordValid) {
+    if (!isPasswordValid) {
       return NextResponse.json(
-        { success: false, message: "Invalid email or password." },
+        { success: false, message: "Invalid password." },
         { status: 401 }
       );
     }

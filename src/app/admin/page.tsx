@@ -16,7 +16,6 @@ interface ContactRecord {
 
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -26,11 +25,10 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
     e.preventDefault();
     setError("");
 
-    const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
-    if (!trimmedEmail || !trimmedPassword) {
-      setError("Email and password are required.");
+    if (!trimmedPassword) {
+      setError("Password is required.");
       return;
     }
 
@@ -39,14 +37,14 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
+        body: JSON.stringify({ password: trimmedPassword }),
       });
       const data = await res.json();
 
       if (data.success) {
         onLogin(data.data.adminKey || "Monk@1234");
       } else {
-        setError(data.message || "Invalid email or password.");
+        setError(data.message || "Invalid password.");
       }
     } catch (err: any) {
       setError("Connection failed: " + (err?.message || "Please try again."));
@@ -75,25 +73,6 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Admin Email */}
-          <div>
-            <label
-              htmlFor="admin-email"
-              className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2"
-            >
-              Admin Email
-            </label>
-            <input
-              id="admin-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="monkpodcast@gmail.com"
-              required
-              disabled={isLoading}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all disabled:opacity-50"
-            />
-          </div>
 
           {/* Password */}
           <div>

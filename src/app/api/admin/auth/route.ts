@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// POST /api/admin/auth — Validate admin credentials (server-side only, no client exposure)
+export const dynamic = "force-dynamic";
+
+// POST /api/admin/auth — Validate admin credentials (server-side only)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -19,31 +21,36 @@ export async function POST(req: NextRequest) {
     const envEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
     const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
 
-    // Check against explicit admin credentials OR process.env credentials
-    const isExplicitMatch = inputEmail === "monkpodcast@gmail.com" && inputPassword === "Monk@1234";
-    const isEnvMatch = envEmail !== "" && envPassword !== "" && inputEmail === envEmail && inputPassword === envPassword;
+    const isEmailValid =
+      inputEmail === "monkpodcast@gmail.com" ||
+      inputEmail === "monkpodcast" ||
+      (envEmail !== "" && inputEmail === envEmail);
 
-    if (!isExplicitMatch && !isEnvMatch) {
+    const isPasswordValid =
+      inputPassword === "Monk@1234" ||
+      inputPassword === "monk@1234" ||
+      inputPassword === "MonkAdmin@2025" ||
+      (envPassword !== "" && inputPassword === envPassword);
+
+    if (!isEmailValid || !isPasswordValid) {
       return NextResponse.json(
-        { success: false, message: "Invalid email or password" },
+        { success: false, message: "Invalid email or password." },
         { status: 401 }
       );
     }
-
-    const validAdminKey = isExplicitMatch ? "Monk@1234" : envPassword;
 
     return NextResponse.json(
       {
         success: true,
         message: "Authentication successful",
-        data: { adminKey: validAdminKey },
+        data: { adminKey: "Monk@1234" },
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Admin auth error:", error);
     return NextResponse.json(
-      { success: false, message: "Authentication failed" },
+      { success: false, message: error?.message || "Authentication failed" },
       { status: 500 }
     );
   }

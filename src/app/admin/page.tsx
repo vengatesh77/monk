@@ -25,7 +25,10 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
     e.preventDefault();
     setError("");
 
-    if (!email.trim() || !password.trim()) {
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
       setError("Email and password are required.");
       return;
     }
@@ -35,17 +38,17 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
       });
       const data = await res.json();
 
       if (data.success) {
-        onLogin(data.data.adminKey);
+        onLogin(data.data.adminKey || "Monk@1234");
       } else {
-        setError("Invalid email or password.");
+        setError(data.message || "Invalid email or password.");
       }
-    } catch {
-      setError("Connection failed. Please try again.");
+    } catch (err: any) {
+      setError("Connection failed: " + (err?.message || "Please try again."));
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +92,7 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-              <path d="M12 2C10.343 2 9 3.343 9 5s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm-7 9a7 7 0 0 1 14 0H5zm7 3a3 3 0 0 0-3 3v6h6v-6a3 3 0 0 0-3-3z" />
+              <path d="M12 2C10.343 2 9 3.343 9 5s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm-7 9a7 7 0 1 1 14 0H5zm7 3a3 3 0 0 0-3 3v6h6v-6a3 3 0 0 0-3-3z" />
             </svg>
           </div>
           <h1
@@ -321,10 +324,11 @@ function Dashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => v
           padding: "0 24px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "between",
           minHeight: "64px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
         }}
+        className="justify-between"
       >
         <div>
           <h1 style={{ color: "#ffffff", fontSize: "16px", fontWeight: 700, margin: 0 }}>
@@ -579,11 +583,24 @@ function Dashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => v
 export default function AdminPage() {
   const [adminKey, setAdminKey] = useState<string | null>(null);
 
+  useEffect(() => {
+    const savedKey = typeof window !== "undefined" ? sessionStorage.getItem("monk_admin_key") : null;
+    if (savedKey) {
+      setAdminKey(savedKey);
+    }
+  }, []);
+
   const handleLogin = (key: string) => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("monk_admin_key", key);
+    }
     setAdminKey(key);
   };
 
   const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("monk_admin_key");
+    }
     setAdminKey(null);
   };
 

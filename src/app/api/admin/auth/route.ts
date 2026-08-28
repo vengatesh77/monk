@@ -13,19 +13,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminEmail = (process.env.ADMIN_EMAIL || "monkpodcast@gmail.com").trim();
+    const adminPassword = (process.env.ADMIN_PASSWORD || "Monk@1234").trim();
 
-    if (!adminEmail || !adminPassword) {
-      console.error("Admin credentials are not configured in environment variables.");
-      return NextResponse.json(
-        { success: false, message: "Server configuration error" },
-        { status: 500 }
-      );
-    }
+    const inputEmail = email.toString().trim().toLowerCase();
+    const inputPassword = password.toString().trim();
 
-    const emailMatch = email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
-    const passwordMatch = password === adminPassword;
+    const emailMatch = inputEmail === adminEmail.toLowerCase();
+    const passwordMatch = inputPassword === adminPassword;
 
     if (!emailMatch || !passwordMatch) {
       return NextResponse.json(

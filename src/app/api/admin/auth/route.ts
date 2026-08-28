@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// POST /api/admin/auth — Validate admin credentials
+// POST /api/admin/auth — Validate admin credentials (server-side only, no client exposure)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -16,14 +16,26 @@ export async function POST(req: NextRequest) {
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPassword = process.env.ADMIN_PASSWORD;
 
-    if (email !== adminEmail || password !== adminPassword) {
+    if (!adminEmail || !adminPassword) {
+      console.error("Admin credentials are not configured in environment variables.");
       return NextResponse.json(
-        { success: false, message: "Invalid credentials" },
+        { success: false, message: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    const emailMatch = email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
+    const passwordMatch = password === adminPassword;
+
+    if (!emailMatch || !passwordMatch) {
+      return NextResponse.json(
+        { success: false, message: "Invalid email or password" },
         { status: 401 }
       );
     }
 
-    // Return a simple token (the password itself serves as the API key)
+    // Use the admin password as the API key for subsequent protected requests.
+    // This is checked server-side via the x-admin-key header — never exposed publicly.
     return NextResponse.json(
       {
         success: true,

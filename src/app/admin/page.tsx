@@ -1,666 +1,595 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-  Users,
-  Calendar,
-  Mail,
-  LogOut,
-  Search,
-  Trash2,
-  RefreshCw,
-  Eye,
-  EyeOff,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  AlertCircle,
-  Mic,
-  Briefcase,
-  FolderGit2,
-  MessageSquareQuote,
-  Plus,
-} from "lucide-react";
-import { ContactRecord, BookingRecord, NewsletterRecord } from "@/types";
+import { Loader2, Eye, EyeOff, LogOut, RefreshCw, AlertCircle } from "lucide-react";
 
-type Tab = "contacts" | "bookings" | "newsletter" | "podcasts" | "services" | "portfolio" | "testimonials";
-type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
+interface ContactRecord {
+  _id: string;
+  name: string;
+  phone: string;
+  email: string;
+  message?: string;
+  subject?: string;
+  createdAt: string;
+}
 
-const STATUS_COLORS: Record<BookingStatus, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  confirmed: "bg-blue-100 text-blue-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-};
-
-const STATUS_ICONS: Record<BookingStatus, React.ElementType> = {
-  pending: Clock,
-  confirmed: CheckCircle2,
-  completed: CheckCircle2,
-  cancelled: XCircle,
-};
-
-export default function AdminPage() {
-  const [adminKey, setAdminKey] = useState<string | null>(null);
+// ─── Login Screen ─────────────────────────────────────────────────────────────
+function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-  const [activeTab, setActiveTab] = useState<Tab>("contacts");
-  const [contacts, setContacts] = useState<ContactRecord[]>([]);
-  const [bookings, setBookings] = useState<BookingRecord[]>([]);
-  const [newsletter, setNewsletter] = useState<NewsletterRecord[]>([]);
-  const [podcasts, setPodcasts] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  const [portfolio, setPortfolio] = useState<any[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [search, setSearch] = useState("");
 
-  const fetchData = useCallback(
-    async (tab: Tab) => {
-      if (!adminKey) return;
-      setIsLoading(true);
-      try {
-        const endpoint =
-          tab === "contacts"
-            ? "/api/contact"
-            : tab === "bookings"
-            ? "/api/booking"
-            : tab === "newsletter"
-            ? "/api/newsletter"
-            : tab === "podcasts"
-            ? "/api/podcasts"
-            : tab === "services"
-            ? "/api/services"
-            : tab === "portfolio"
-            ? "/api/portfolio"
-            : "/api/testimonials";
-
-        const res = await fetch(endpoint, {
-          headers: { "x-admin-key": adminKey },
-        });
-        const data = await res.json();
-        if (data.success) {
-          if (tab === "contacts") setContacts(data.data);
-          else if (tab === "bookings") setBookings(data.data);
-          else if (tab === "newsletter") setNewsletter(data.data);
-          else if (tab === "podcasts") setPodcasts(data.data);
-          else if (tab === "services") setServices(data.data);
-          else if (tab === "portfolio") setPortfolio(data.data);
-          else setTestimonials(data.data);
-        }
-      } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [adminKey]
-  );
-
-  useEffect(() => {
-    if (adminKey) {
-      fetchData(activeTab);
-    }
-  }, [adminKey, activeTab, fetchData]);
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoggingIn(true);
-    setLoginError("");
+    setError("");
+
+    if (!email.trim() || !password.trim()) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await res.json();
+
       if (data.success) {
-        setAdminKey(data.data.adminKey);
+        onLogin(data.data.adminKey);
       } else {
-        setLoginError(data.message || "Invalid credentials");
+        setError("Invalid email or password.");
       }
     } catch {
-      setLoginError("Connection failed. Please try again.");
+      setError("Connection failed. Please try again.");
     } finally {
-      setIsLoggingIn(false);
+      setIsLoading(false);
     }
   };
-
-  const handleDeleteItem = async (id: string, resource: Tab) => {
-    if (!adminKey || !confirm(`Are you sure you want to delete this item?`)) return;
-    try {
-      const endpoint =
-        resource === "bookings"
-          ? `/api/booking/${id}`
-          : resource === "podcasts"
-          ? `/api/podcasts/${id}`
-          : resource === "services"
-          ? `/api/services/${id}`
-          : resource === "portfolio"
-          ? `/api/portfolio/${id}`
-          : `/api/testimonials/${id}`;
-
-      const res = await fetch(endpoint, {
-        method: "DELETE",
-        headers: { "x-admin-key": adminKey },
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchData(resource);
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-    }
-  };
-
-  const handleStatusUpdate = async (id: string, status: BookingStatus) => {
-    if (!adminKey) return;
-    try {
-      const res = await fetch(`/api/booking/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-key": adminKey,
-        },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setBookings((prev) =>
-          prev.map((b) => (b._id === id ? { ...b, status } : b))
-        );
-      }
-    } catch (err) {
-      console.error("Status update error:", err);
-    }
-  };
-
-  // Login Screen
-  if (!adminKey) {
-    return (
-      <div className="min-h-screen bg-[#0d141a] flex items-center justify-center p-4 pt-24">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-[#0d141a]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-7 9a7 7 0 1 1 14 0H5zm7 3a3 3 0 0 0-3 3v6h6v-6a3 3 0 0 0-3-3z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-gray-400 text-sm mt-1">
-              Monk Podcast Studio — Restricted Access
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="bg-white rounded-2xl p-8 space-y-5">
-            <div>
-              <label htmlFor="admin-email" className="block text-sm font-semibold text-[#0d141a] mb-2">
-                Admin Email
-              </label>
-              <input
-                id="admin-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
-                required
-                className="form-input"
-                disabled={isLoggingIn}
-              />
-            </div>
-            <div>
-              <label htmlFor="admin-password" className="block text-sm font-semibold text-[#0d141a] mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="admin-password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  className="form-input pr-10"
-                  disabled={isLoggingIn}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {loginError && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg p-3">
-                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                <p className="text-red-600 text-sm">{loginError}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoggingIn}
-              className="btn-primary w-full disabled:opacity-60"
-              id="admin-login-btn"
-            >
-              {isLoggingIn ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              {isLoggingIn ? "Signing in..." : "Sign In"}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] pt-20 pb-16">
-      {/* Admin Header */}
-      <div className="bg-[#0d141a] text-white py-4">
-        <div className="container-custom flex items-center justify-between">
-          <div>
-            <h1 className="font-bold text-lg">Admin Dashboard</h1>
-            <p className="text-gray-400 text-xs">
-              Monk Podcast Studio Management &amp; Content CMS
-            </p>
-          </div>
-          <button
-            onClick={() => setAdminKey(null)}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
-            id="admin-logout-btn"
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f5f5f5",
+        fontFamily: "'Montserrat', sans-serif",
+        padding: "16px",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          background: "#ffffff",
+          borderRadius: "16px",
+          padding: "48px 40px",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          border: "1px solid #e8e8e8",
+        }}
+      >
+        {/* Logo / Title */}
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <div
+            style={{
+              width: "52px",
+              height: "52px",
+              background: "#0d141a",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
           >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
-        </div>
-      </div>
-
-      <div className="container-custom py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: "Contacts", count: contacts.length, icon: Users, color: "bg-blue-500" },
-            { label: "Bookings", count: bookings.length, icon: Calendar, color: "bg-[#8f11a8]" },
-            { label: "Subscribers", count: newsletter.length, icon: Mail, color: "bg-green-500" },
-            { label: "Podcasts", count: podcasts.length, icon: Mic, color: "bg-amber-500" },
-          ].map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div key={stat.label} className="bg-white rounded-xl p-5 flex items-center gap-4 shadow-sm">
-                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center shrink-0`}>
-                  <Icon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#0d141a]">{stat.count}</div>
-                  <div className="text-[#56585e] text-xs">{stat.label}</div>
-                </div>
-              </div>
-            );
-          })}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <path d="M12 2C10.343 2 9 3.343 9 5s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm-7 9a7 7 0 0 1 14 0H5zm7 3a3 3 0 0 0-3 3v6h6v-6a3 3 0 0 0-3-3z" />
+            </svg>
+          </div>
+          <h1
+            style={{
+              fontSize: "22px",
+              fontWeight: 700,
+              color: "#0d141a",
+              margin: "0 0 6px",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            ADMIN LOGIN
+          </h1>
+          <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>
+            Monk Podcast Studio
+          </p>
         </div>
 
-        {/* Tabs + Search */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between p-5 border-b border-gray-100 gap-4">
-            {/* Tab buttons */}
-            <div className="flex flex-wrap gap-1.5">
-              {(["contacts", "bookings", "newsletter", "podcasts", "services", "portfolio", "testimonials"] as Tab[]).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => {
-                    setActiveTab(tab);
-                    setSearch("");
-                  }}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
-                    activeTab === tab
-                      ? "bg-[#0d141a] text-white"
-                      : "bg-gray-100 text-[#56585e] hover:bg-gray-200"
-                  }`}
-                  id={`admin-tab-${tab}`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          {/* Email */}
+          <div>
+            <label
+              htmlFor="admin-email"
+              style={{
+                display: "block",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "#0d141a",
+                marginBottom: "8px",
+              }}
+            >
+              Admin Email
+            </label>
+            <input
+              id="admin-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="monkpodcast@gmail.com"
+              required
+              disabled={isLoading}
+              style={{
+                width: "100%",
+                padding: "13px 16px",
+                border: "1px solid #d1d5db",
+                borderRadius: "10px",
+                fontSize: "14px",
+                color: "#0d141a",
+                outline: "none",
+                background: "#fafafa",
+                boxSizing: "border-box",
+                fontFamily: "'Montserrat', sans-serif",
+              }}
+            />
+          </div>
 
-            <div className="flex items-center gap-3">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..."
-                  className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#0d141a] w-40 sm:w-48"
-                  id="admin-search"
-                />
-              </div>
-              {/* Refresh */}
-              <button
-                onClick={() => fetchData(activeTab)}
+          {/* Password */}
+          <div>
+            <label
+              htmlFor="admin-password"
+              style={{
+                display: "block",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "#0d141a",
+                marginBottom: "8px",
+              }}
+            >
+              Password
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                id="admin-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
                 disabled={isLoading}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Refresh"
+                style={{
+                  width: "100%",
+                  padding: "13px 44px 13px 16px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "10px",
+                  fontSize: "14px",
+                  color: "#0d141a",
+                  outline: "none",
+                  background: "#fafafa",
+                  boxSizing: "border-box",
+                  fontFamily: "'Montserrat', sans-serif",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute",
+                  right: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#999",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                }}
               >
-                <RefreshCw className={`w-4 h-4 text-gray-500 ${isLoading ? "animate-spin" : ""}`} />
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
 
-          {/* Table Content */}
-          <div className="overflow-x-auto">
+          {/* Error */}
+          {error && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: "8px",
+                padding: "10px 14px",
+              }}
+            >
+              <AlertCircle size={14} style={{ color: "#ef4444", flexShrink: 0 }} />
+              <p style={{ fontSize: "13px", color: "#dc2626", margin: 0 }}>{error}</p>
+            </div>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            id="admin-login-btn"
+            style={{
+              width: "100%",
+              padding: "14px",
+              background: "#0d141a",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "10px",
+              fontSize: "14px",
+              fontWeight: 700,
+              letterSpacing: "1.5px",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              opacity: isLoading ? 0.7 : 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              fontFamily: "'Montserrat', sans-serif",
+              marginTop: "4px",
+            }}
+          >
             {isLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-[#8f11a8]" />
-              </div>
-            ) : (
               <>
-                {/* CONTACTS TABLE */}
-                {activeTab === "contacts" && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Name</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Email</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Phone</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Subject</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {contacts.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="text-center py-12 text-[#56585e]">
-                            No contact inquiries yet
-                          </td>
-                        </tr>
-                      ) : (
-                        contacts.map((c) => (
-                          <tr key={c._id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-4 font-medium text-[#0d141a]">{c.name}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{c.email}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{c.phone}</td>
-                            <td className="px-5 py-4 text-[#56585e] max-w-xs truncate">{c.subject}</td>
-                            <td className="px-5 py-4 text-[#56585e] whitespace-nowrap">
-                              {new Date(c.createdAt).toLocaleDateString("en-IN")}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* BOOKINGS TABLE */}
-                {activeTab === "bookings" && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Customer</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Service</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Date &amp; Time</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Status</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {bookings.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="text-center py-12 text-[#56585e]">
-                            No bookings yet
-                          </td>
-                        </tr>
-                      ) : (
-                        bookings.map((b) => {
-                          const StatusIcon = STATUS_ICONS[b.status as BookingStatus];
-                          return (
-                            <tr key={b._id} className="hover:bg-gray-50 transition-colors">
-                              <td className="px-5 py-4">
-                                <div className="font-medium text-[#0d141a]">{b.name}</div>
-                                <div className="text-[#56585e] text-xs">{b.email} • {b.phone}</div>
-                              </td>
-                              <td className="px-5 py-4 text-[#56585e]">{b.service}</td>
-                              <td className="px-5 py-4 text-[#56585e] whitespace-nowrap">
-                                <div>{new Date(b.preferredDate).toLocaleDateString("en-IN")}</div>
-                                <div className="text-xs">{b.preferredTime}</div>
-                              </td>
-                              <td className="px-5 py-4">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[b.status as BookingStatus]}`}>
-                                  <StatusIcon className="w-3 h-3" />
-                                  {b.status}
-                                </span>
-                              </td>
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-2">
-                                  <select
-                                    value={b.status}
-                                    onChange={(e) => handleStatusUpdate(b._id, e.target.value as BookingStatus)}
-                                    className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#0d141a]"
-                                  >
-                                    {["pending", "confirmed", "completed", "cancelled"].map((s) => (
-                                      <option key={s} value={s}>{s}</option>
-                                    ))}
-                                  </select>
-                                  <button
-                                    onClick={() => handleDeleteItem(b._id, "bookings")}
-                                    className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-400 hover:text-red-600"
-                                    title="Delete booking"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* PODCASTS TABLE */}
-                {activeTab === "podcasts" && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Title</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Category</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Duration</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {podcasts.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="text-center py-12 text-[#56585e]">
-                            No podcasts in database. Create via API POST /api/podcasts
-                          </td>
-                        </tr>
-                      ) : (
-                        podcasts.map((p) => (
-                          <tr key={p._id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-4 font-medium text-[#0d141a]">{p.title}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{p.category}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{p.duration}</td>
-                            <td className="px-5 py-4">
-                              <button
-                                onClick={() => handleDeleteItem(p._id, "podcasts")}
-                                className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-400 hover:text-red-600"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* SERVICES TABLE */}
-                {activeTab === "services" && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Title</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Slug</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {services.length === 0 ? (
-                        <tr>
-                          <td colSpan={3} className="text-center py-12 text-[#56585e]">
-                            No services in database. Create via API POST /api/services
-                          </td>
-                        </tr>
-                      ) : (
-                        services.map((s) => (
-                          <tr key={s._id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-4 font-medium text-[#0d141a]">{s.title}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{s.slug}</td>
-                            <td className="px-5 py-4">
-                              <button
-                                onClick={() => handleDeleteItem(s._id, "services")}
-                                className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-400 hover:text-red-600"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* PORTFOLIO TABLE */}
-                {activeTab === "portfolio" && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Project Title</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Category</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Client</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {portfolio.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="text-center py-12 text-[#56585e]">
-                            No portfolio projects in database. Create via API POST /api/portfolio
-                          </td>
-                        </tr>
-                      ) : (
-                        portfolio.map((item) => (
-                          <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-4 font-medium text-[#0d141a]">{item.title}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{item.category}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{item.clientName || "-"}</td>
-                            <td className="px-5 py-4">
-                              <button
-                                onClick={() => handleDeleteItem(item._id, "portfolio")}
-                                className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-400 hover:text-red-600"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* TESTIMONIALS TABLE */}
-                {activeTab === "testimonials" && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Client</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Location</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Rating</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {testimonials.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="text-center py-12 text-[#56585e]">
-                            No testimonials in database. Create via API POST /api/testimonials
-                          </td>
-                        </tr>
-                      ) : (
-                        testimonials.map((t) => (
-                          <tr key={t._id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-4 font-medium text-[#0d141a]">{t.name}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{t.location}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{t.rating} ★</td>
-                            <td className="px-5 py-4">
-                              <button
-                                onClick={() => handleDeleteItem(t._id, "testimonials")}
-                                className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-400 hover:text-red-600"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* NEWSLETTER TABLE */}
-                {activeTab === "newsletter" && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">#</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Name</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Contact Number</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Email</th>
-                        <th className="px-5 py-3 font-semibold text-[#56585e]">Subscribed On</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {newsletter.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="text-center py-12 text-[#56585e]">
-                            No subscribers yet
-                          </td>
-                        </tr>
-                      ) : (
-                        newsletter.map((n, idx) => (
-                          <tr key={n._id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-4 text-[#56585e]">{idx + 1}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{n.name || "-"}</td>
-                            <td className="px-5 py-4 text-[#56585e]">{n.contactNumber || "-"}</td>
-                            <td className="px-5 py-4 font-medium text-[#0d141a]">{n.email}</td>
-                            <td className="px-5 py-4 text-[#56585e]">
-                              {new Date(n.createdAt).toLocaleDateString("en-IN")}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
+                <Loader2 size={16} className="animate-spin" />
+                Verifying...
               </>
+            ) : (
+              "ENTER"
             )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+function Dashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => void }) {
+  const [contacts, setContacts] = useState<ContactRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchContacts = useCallback(async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        headers: { "x-admin-key": adminKey },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setContacts(data.data || []);
+      } else {
+        setError("Failed to load contact inquiries.");
+      }
+    } catch {
+      setError("Connection failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [adminKey]);
+
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f5f5f5",
+        fontFamily: "'Montserrat', sans-serif",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          background: "#0d141a",
+          padding: "0 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          minHeight: "64px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        }}
+      >
+        <div>
+          <h1 style={{ color: "#ffffff", fontSize: "16px", fontWeight: 700, margin: 0 }}>
+            Admin Dashboard
+          </h1>
+          <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>
+            Monk Podcast Studio
+          </p>
+        </div>
+        <button
+          onClick={onLogout}
+          id="admin-logout-btn"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            color: "#d1d5db",
+            padding: "8px 16px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            cursor: "pointer",
+            fontFamily: "'Montserrat', sans-serif",
+          }}
+        >
+          <LogOut size={14} />
+          Logout
+        </button>
+      </div>
+
+      {/* Content */}
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "32px 24px" }}>
+        {/* Section Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+          }}
+        >
+          <div>
+            <h2
+              style={{
+                fontSize: "20px",
+                fontWeight: 700,
+                color: "#0d141a",
+                margin: "0 0 4px",
+              }}
+            >
+              Contact Inquiries
+            </h2>
+            <p style={{ fontSize: "13px", color: "#6b7280", margin: 0 }}>
+              {isLoading
+                ? "Loading..."
+                : `${contacts.length} total submission${contacts.length !== 1 ? "s" : ""}`}
+            </p>
           </div>
+          <button
+            onClick={fetchContacts}
+            disabled={isLoading}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "#ffffff",
+              border: "1px solid #e5e7eb",
+              color: "#374151",
+              padding: "8px 16px",
+              borderRadius: "8px",
+              fontSize: "13px",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              fontFamily: "'Montserrat', sans-serif",
+            }}
+          >
+            <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
+            Refresh
+          </button>
+        </div>
+
+        {/* Table Card */}
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: "14px",
+            boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
+            border: "1px solid #e5e7eb",
+            overflow: "hidden",
+          }}
+        >
+          {isLoading ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "80px",
+                gap: "12px",
+                color: "#6b7280",
+                fontSize: "14px",
+              }}
+            >
+              <Loader2 size={20} className="animate-spin" />
+              Loading inquiries...
+            </div>
+          ) : error ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "60px",
+                gap: "10px",
+                color: "#ef4444",
+                fontSize: "14px",
+              }}
+            >
+              <AlertCircle size={18} />
+              {error}
+            </div>
+          ) : contacts.length === 0 ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "80px 24px",
+                color: "#9ca3af",
+                fontSize: "14px",
+              }}
+            >
+              No contact inquiries yet. Submissions from the Contact page will appear here.
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
+                    {["S.No", "Name", "Contact Number", "Email Address", "Message", "Submitted Date"].map(
+                      (col) => (
+                        <th
+                          key={col}
+                          style={{
+                            padding: "14px 16px",
+                            textAlign: "left",
+                            fontWeight: 600,
+                            color: "#6b7280",
+                            fontSize: "12px",
+                            letterSpacing: "0.05em",
+                            textTransform: "uppercase",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {col}
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {contacts.map((c, idx) => (
+                    <tr
+                      key={c._id}
+                      style={{
+                        borderBottom: idx < contacts.length - 1 ? "1px solid #f3f4f6" : "none",
+                        background: idx % 2 === 0 ? "#ffffff" : "#fafafa",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#9ca3af",
+                          fontWeight: 600,
+                          fontSize: "12px",
+                        }}
+                      >
+                        {idx + 1}
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#0d141a",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {c.name}
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#374151",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {c.phone || "—"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#374151",
+                        }}
+                      >
+                        <a
+                          href={`mailto:${c.email}`}
+                          style={{ color: "#374151", textDecoration: "none" }}
+                        >
+                          {c.email}
+                        </a>
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#6b7280",
+                          maxWidth: "260px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "240px",
+                          }}
+                          title={c.message || ""}
+                        >
+                          {c.message || "—"}
+                        </div>
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#6b7280",
+                          whiteSpace: "nowrap",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {formatDate(c.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+// ─── Main Admin Page ───────────────────────────────────────────────────────────
+export default function AdminPage() {
+  const [adminKey, setAdminKey] = useState<string | null>(null);
+
+  const handleLogin = (key: string) => {
+    setAdminKey(key);
+  };
+
+  const handleLogout = () => {
+    setAdminKey(null);
+  };
+
+  if (!adminKey) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  return <Dashboard adminKey={adminKey} onLogout={handleLogout} />;
 }

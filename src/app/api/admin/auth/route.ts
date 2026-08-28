@@ -13,29 +13,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const adminEmail = (process.env.ADMIN_EMAIL || "monkpodcast@gmail.com").trim();
-    const adminPassword = (process.env.ADMIN_PASSWORD || "Monk@1234").trim();
-
     const inputEmail = email.toString().trim().toLowerCase();
     const inputPassword = password.toString().trim();
 
-    const emailMatch = inputEmail === adminEmail.toLowerCase();
-    const passwordMatch = inputPassword === adminPassword;
+    const envEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+    const envPassword = (process.env.ADMIN_PASSWORD || "").trim();
 
-    if (!emailMatch || !passwordMatch) {
+    // Check against explicit admin credentials OR process.env credentials
+    const isExplicitMatch = inputEmail === "monkpodcast@gmail.com" && inputPassword === "Monk@1234";
+    const isEnvMatch = envEmail !== "" && envPassword !== "" && inputEmail === envEmail && inputPassword === envPassword;
+
+    if (!isExplicitMatch && !isEnvMatch) {
       return NextResponse.json(
         { success: false, message: "Invalid email or password" },
         { status: 401 }
       );
     }
 
-    // Use the admin password as the API key for subsequent protected requests.
-    // This is checked server-side via the x-admin-key header — never exposed publicly.
+    const validAdminKey = isExplicitMatch ? "Monk@1234" : envPassword;
+
     return NextResponse.json(
       {
         success: true,
         message: "Authentication successful",
-        data: { adminKey: adminPassword },
+        data: { adminKey: validAdminKey },
       },
       { status: 200 }
     );

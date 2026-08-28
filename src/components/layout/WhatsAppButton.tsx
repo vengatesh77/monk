@@ -1,8 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function WhatsAppButton() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
   const whatsappNumber = "919080644504";
   const defaultMessage = encodeURIComponent(
     "👋 Hi there! I'd like to inquire about booking a session at Monk Podcast Studio."

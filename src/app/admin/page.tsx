@@ -55,74 +55,30 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#f5f5f5",
-        fontFamily: "'Montserrat', sans-serif",
-        padding: "16px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          background: "#ffffff",
-          borderRadius: "16px",
-          padding: "48px 40px",
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-          border: "1px solid #e8e8e8",
-        }}
-      >
-        {/* Logo / Title */}
-        <div style={{ textAlign: "center", marginBottom: "36px" }}>
-          <div
-            style={{
-              width: "52px",
-              height: "52px",
-              background: "#0d141a",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 16px",
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl p-8 sm:p-10 shadow-2xl border border-gray-100">
+        {/* Header Icon & Title */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-md">
+            <svg className="w-7 h-7 fill-current" viewBox="0 0 24 24">
               <path d="M12 2C10.343 2 9 3.343 9 5s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm-7 9a7 7 0 1 1 14 0H5zm7 3a3 3 0 0 0-3 3v6h6v-6a3 3 0 0 0-3-3z" />
             </svg>
           </div>
-          <h1
-            style={{
-              fontSize: "22px",
-              fontWeight: 700,
-              color: "#0d141a",
-              margin: "0 0 6px",
-              letterSpacing: "-0.3px",
-            }}
-          >
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             ADMIN LOGIN
           </h1>
-          <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>
+          <p className="text-sm font-medium text-slate-500 mt-1">
             Monk Podcast Studio
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-          {/* Email */}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Admin Email */}
           <div>
             <label
               htmlFor="admin-email"
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#0d141a",
-                marginBottom: "8px",
-              }}
+              className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2"
             >
               Admin Email
             </label>
@@ -134,18 +90,7 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
               placeholder="monkpodcast@gmail.com"
               required
               disabled={isLoading}
-              style={{
-                width: "100%",
-                padding: "13px 16px",
-                border: "1px solid #d1d5db",
-                borderRadius: "10px",
-                fontSize: "14px",
-                color: "#0d141a",
-                outline: "none",
-                background: "#fafafa",
-                boxSizing: "border-box",
-                fontFamily: "'Montserrat', sans-serif",
-              }}
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all disabled:opacity-50"
             />
           </div>
 
@@ -153,17 +98,11 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
           <div>
             <label
               htmlFor="admin-password"
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#0d141a",
-                marginBottom: "8px",
-              }}
+              className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2"
             >
               Password
             </label>
-            <div style={{ position: "relative" }}>
+            <div className="relative">
               <input
                 id="admin-password"
                 type={showPassword ? "text" : "password"}
@@ -172,88 +111,42 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
-                style={{
-                  width: "100%",
-                  padding: "13px 44px 13px 16px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "10px",
-                  fontSize: "14px",
-                  color: "#0d141a",
-                  outline: "none",
-                  background: "#fafafa",
-                  boxSizing: "border-box",
-                  fontFamily: "'Montserrat', sans-serif",
-                }}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-11 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: "absolute",
-                  right: "14px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#999",
-                  padding: 0,
-                  display: "flex",
-                  alignItems: "center",
-                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
 
-          {/* Error */}
+          {/* Error Message */}
           {error && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                background: "#fef2f2",
-                border: "1px solid #fecaca",
-                borderRadius: "8px",
-                padding: "10px 14px",
-              }}
-            >
-              <AlertCircle size={14} style={{ color: "#ef4444", flexShrink: 0 }} />
-              <p style={{ fontSize: "13px", color: "#dc2626", margin: 0 }}>{error}</p>
+            <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 rounded-xl p-3.5 text-red-600 text-xs font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
             id="admin-login-btn"
-            style={{
-              width: "100%",
-              padding: "14px",
-              background: "#0d141a",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "10px",
-              fontSize: "14px",
-              fontWeight: 700,
-              letterSpacing: "1.5px",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              opacity: isLoading ? 0.7 : 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              fontFamily: "'Montserrat', sans-serif",
-              marginTop: "4px",
-            }}
+            className="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-xl text-xs tracking-widest uppercase shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer min-h-[46px]"
           >
             {isLoading ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
-                Verifying...
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>VERIFYING...</span>
               </>
             ) : (
               "ENTER"
@@ -266,7 +159,13 @@ function LoginScreen({ onLogin }: { onLogin: (key: string) => void }) {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-function Dashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => void }) {
+function Dashboard({
+  adminKey,
+  onLogout,
+}: {
+  adminKey: string;
+  onLogout: () => void;
+}) {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -310,261 +209,128 @@ function Dashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => v
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f5f5f5",
-        fontFamily: "'Montserrat', sans-serif",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          background: "#0d141a",
-          padding: "0 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "between",
-          minHeight: "64px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-        }}
-        className="justify-between"
-      >
-        <div>
-          <h1 style={{ color: "#ffffff", fontSize: "16px", fontWeight: 700, margin: 0 }}>
-            Admin Dashboard
-          </h1>
-          <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>
-            Monk Podcast Studio
-          </p>
-        </div>
-        <button
-          onClick={onLogout}
-          id="admin-logout-btn"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            color: "#d1d5db",
-            padding: "8px 16px",
-            borderRadius: "8px",
-            fontSize: "13px",
-            cursor: "pointer",
-            fontFamily: "'Montserrat', sans-serif",
-          }}
-        >
-          <LogOut size={14} />
-          Logout
-        </button>
-      </div>
-
-      {/* Content */}
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "32px 24px" }}>
-        {/* Section Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-900">
+      {/* Top Bar / Header */}
+      <header className="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div>
-            <h2
-              style={{
-                fontSize: "20px",
-                fontWeight: 700,
-                color: "#0d141a",
-                margin: "0 0 4px",
-              }}
-            >
+            <h1 className="text-lg font-bold tracking-tight text-white">
+              Admin Dashboard
+            </h1>
+            <p className="text-xs text-slate-400">
+              Monk Podcast Studio — Contact Submissions
+            </p>
+          </div>
+          <button
+            onClick={onLogout}
+            id="admin-logout-btn"
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-4 py-2 rounded-lg border border-slate-700 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Title + Action Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
               Contact Inquiries
             </h2>
-            <p style={{ fontSize: "13px", color: "#6b7280", margin: 0 }}>
+            <p className="text-xs text-slate-500 mt-1">
               {isLoading
                 ? "Loading..."
-                : `${contacts.length} total submission${contacts.length !== 1 ? "s" : ""}`}
+                : `${contacts.length} total submission${
+                    contacts.length !== 1 ? "s" : ""
+                  }`}
             </p>
           </div>
           <button
             onClick={fetchContacts}
             disabled={isLoading}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              background: "#ffffff",
-              border: "1px solid #e5e7eb",
-              color: "#374151",
-              padding: "8px 16px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              fontFamily: "'Montserrat', sans-serif",
-            }}
+            className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
           >
-            <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
-            Refresh
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Refresh Data
           </button>
         </div>
 
-        {/* Table Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: "14px",
-            boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
-            border: "1px solid #e5e7eb",
-            overflow: "hidden",
-          }}
-        >
+        {/* Submissions Table Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           {isLoading ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "80px",
-                gap: "12px",
-                color: "#6b7280",
-                fontSize: "14px",
-              }}
-            >
-              <Loader2 size={20} className="animate-spin" />
-              Loading inquiries...
+            <div className="flex items-center justify-center py-24 gap-3 text-slate-500 text-sm">
+              <Loader2 className="w-5 h-5 animate-spin text-slate-900" />
+              <span>Loading contact submissions...</span>
             </div>
           ) : error ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "60px",
-                gap: "10px",
-                color: "#ef4444",
-                fontSize: "14px",
-              }}
-            >
-              <AlertCircle size={18} />
-              {error}
+            <div className="flex items-center justify-center py-20 gap-2 text-red-500 text-sm font-medium">
+              <AlertCircle className="w-5 h-5" />
+              <span>{error}</span>
             </div>
           ) : contacts.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "80px 24px",
-                color: "#9ca3af",
-                fontSize: "14px",
-              }}
-            >
-              No contact inquiries yet. Submissions from the Contact page will appear here.
+            <div className="text-center py-24 text-slate-400 text-sm">
+              No contact inquiries submitted yet.
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-                <thead>
-                  <tr style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
-                    {["S.No", "Name", "Contact Number", "Email Address", "Message", "Submitted Date"].map(
-                      (col) => (
-                        <th
-                          key={col}
-                          style={{
-                            padding: "14px 16px",
-                            textAlign: "left",
-                            fontWeight: 600,
-                            color: "#6b7280",
-                            fontSize: "12px",
-                            letterSpacing: "0.05em",
-                            textTransform: "uppercase",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {col}
-                        </th>
-                      )
-                    )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      S.No
+                    </th>
+                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Contact Number
+                    </th>
+                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Email Address
+                    </th>
+                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Message
+                    </th>
+                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Submitted Date
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100">
                   {contacts.map((c, idx) => (
                     <tr
                       key={c._id}
-                      style={{
-                        borderBottom: idx < contacts.length - 1 ? "1px solid #f3f4f6" : "none",
-                        background: idx % 2 === 0 ? "#ffffff" : "#fafafa",
-                      }}
+                      className="hover:bg-slate-50/80 transition-colors"
                     >
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          color: "#9ca3af",
-                          fontWeight: 600,
-                          fontSize: "12px",
-                        }}
-                      >
+                      <td className="px-6 py-4 text-xs font-semibold text-slate-400">
                         {idx + 1}
                       </td>
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          color: "#0d141a",
-                          fontWeight: 600,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="px-6 py-4 font-semibold text-slate-900 whitespace-nowrap">
                         {c.name}
                       </td>
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          color: "#374151",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
                         {c.phone || "—"}
                       </td>
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          color: "#374151",
-                        }}
-                      >
+                      <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
                         <a
                           href={`mailto:${c.email}`}
-                          style={{ color: "#374151", textDecoration: "none" }}
+                          className="hover:underline hover:text-slate-900"
                         >
                           {c.email}
                         </a>
                       </td>
                       <td
-                        style={{
-                          padding: "14px 16px",
-                          color: "#6b7280",
-                          maxWidth: "260px",
-                        }}
+                        className="px-6 py-4 text-slate-500 max-w-xs truncate"
+                        title={c.message || ""}
                       >
-                        <div
-                          style={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "240px",
-                          }}
-                          title={c.message || ""}
-                        >
-                          {c.message || "—"}
-                        </div>
+                        {c.message || "—"}
                       </td>
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          color: "#6b7280",
-                          whiteSpace: "nowrap",
-                          fontSize: "12px",
-                        }}
-                      >
+                      <td className="px-6 py-4 text-xs text-slate-400 whitespace-nowrap">
                         {formatDate(c.createdAt)}
                       </td>
                     </tr>
@@ -574,7 +340,7 @@ function Dashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => v
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -584,7 +350,10 @@ export default function AdminPage() {
   const [adminKey, setAdminKey] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedKey = typeof window !== "undefined" ? sessionStorage.getItem("monk_admin_key") : null;
+    const savedKey =
+      typeof window !== "undefined"
+        ? sessionStorage.getItem("monk_admin_key")
+        : null;
     if (savedKey) {
       setAdminKey(savedKey);
     }

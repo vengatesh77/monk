@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Eye, EyeOff, LogOut, RefreshCw, AlertCircle } from "lucide-react";
+import { Loader2, Eye, EyeOff, LogOut, RefreshCw, AlertCircle, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 interface ContactRecord {
   _id: string;
@@ -168,6 +169,7 @@ function Dashboard({
 }) {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState("");
 
   const fetchContacts = useCallback(async () => {
@@ -205,6 +207,71 @@ function Dashboard({
       });
     } catch {
       return dateStr;
+    }
+  };
+
+  const formatExcelDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      const datePart = d.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+      const timePart = d
+        .toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
+        .toLowerCase();
+      return `${datePart}, ${timePart}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (!adminKey || isExporting) return;
+    setIsExporting(true);
+    try {
+      const res = await fetch("/api/contact", {
+        headers: { "x-admin-key": adminKey },
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        const allContacts: ContactRecord[] = data.data;
+
+        const excelRows = allContacts.map((c, idx) => ({
+          "S.No": idx + 1,
+          "Name": c.name || "—",
+          "Contact Number": c.phone || "—",
+          "Email Address": c.email || "—",
+          "Message": c.message || "No message provided",
+          "Submitted Date": formatExcelDate(c.createdAt),
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(excelRows);
+
+        // Adjust column widths for clean readability
+        worksheet["!cols"] = [
+          { wch: 8 },  // S.No
+          { wch: 22 }, // Name
+          { wch: 18 }, // Contact Number
+          { wch: 28 }, // Email Address
+          { wch: 45 }, // Message
+          { wch: 24 }, // Submitted Date
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Contact Inquiries");
+
+        XLSX.writeFile(workbook, "monk-contact-inquiries.xlsx");
+      }
+    } catch (err) {
+      console.error("Export Excel error:", err);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -248,16 +315,32 @@ function Dashboard({
                   }`}
             </p>
           </div>
-          <button
-            onClick={fetchContacts}
-            disabled={isLoading}
-            className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
-            />
-            Refresh Data
-          </button>
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <button
+              onClick={fetchContacts}
+              disabled={isLoading || isExporting}
+              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Refresh Data
+            </button>
+
+            <button
+              onClick={handleExportExcel}
+              disabled={isLoading || isExporting}
+              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+              id="admin-export-excel-btn"
+            >
+              {isExporting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              Export Excel
+            </button>
+          </div>
         </div>
 
         {/* Submissions Table Card */}

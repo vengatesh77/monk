@@ -29,7 +29,7 @@ export default function NewsletterSection() {
 
       if (data.success) {
         setStatus("success");
-        setMessage("Thank you for reaching out!");
+        setMessage(data.message || "Successfully subscribed to the newsletter.");
         setName("");
         setContactNumber("");
         setEmail("");

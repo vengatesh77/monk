@@ -1,35 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
-import Newsletter from "@/models/Newsletter";
+import NewsletterSubscriber from "@/models/NewsletterSubscriber";
 import { z } from "zod";
 
 const newsletterSchema = z.object({
-  name: z.string().optional(),
-  contactNumber: z.string().optional(),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().trim().email("Please enter a valid email address"),
 });
 
-// POST /api/newsletter — Subscribe
+// POST /api/newsletter — Subscribe to newsletter
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const parsed = newsletterSchema.safeParse(body);
+
+    const rawEmail = (body.email || "").toString().trim().toLowerCase();
+    const parsed = newsletterSchema.safeParse({ email: rawEmail });
 
     if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
-          message: "Validation failed",
-          error: parsed.error.issues[0].message,
+          message: parsed.error.issues[0]?.message || "Invalid email address",
         },
         { status: 400 }
       );
     }
 
+    const { email } = parsed.data;
+
     await connectDB();
 
-    // Check for duplicate
-    const existing = await Newsletter.findOne({ email: parsed.data.email });
+    // Check for duplicate subscriber in newsletterSubscribers collection
+    const existing = await NewsletterSubscriber.findOne({ email });
     if (existing) {
       return NextResponse.json(
         {
@@ -40,21 +41,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await Newsletter.create(parsed.data);
+    // Save to newsletterSubscribers collection
+    const newSubscriber = await NewsletterSubscriber.create({
+      email,
+      status: "active",
+      subscribedAt: new Date(),
+    });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Thank you for subscribing! Stay tuned for updates.",
+        message: "Successfully subscribed to the newsletter.",
+        data: {
+          id: newSubscriber._id,
+          email: newSubscriber.email,
+          status: newSubscriber.status,
+          subscribedAt: newSubscriber.subscribedAt,
+        },
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Newsletter POST error:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Database connection failed. Please try again later.",
+        message: "Failed to process subscription. Please try again.",
       },
       { status: 500 }
     );
@@ -80,8 +92,8 @@ export async function GET(req: NextRequest) {
     }
 
     await connectDB();
-    const subscribers = await Newsletter.find({})
-      .sort({ createdAt: -1 })
+    const subscribers = await NewsletterSubscriber.find({})
+      .sort({ subscribedAt: -1 })
       .lean();
 
     return NextResponse.json(
@@ -92,7 +104,7 @@ export async function GET(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Newsletter GET error:", error);
     return NextResponse.json(
       {

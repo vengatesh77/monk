@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
     if (!webhookUrl) {
-      console.error("PICKMYAI_WEBHOOK_URL is not configured");
+      console.error("[CRM] PICKMYAI_WEBHOOK_URL is not configured");
       return NextResponse.json(
         { success: false, message: "Booking delivery is temporarily unavailable. Please try again later." },
         { status: 500 }
@@ -60,6 +60,8 @@ export async function POST(req: NextRequest) {
       ...parsed.data,
       preferredDate: new Date(parsed.data.preferredDate),
     });
+
+    console.log("[CRM] Booking webhook starting");
 
     let webhookResponse: Response;
     try {
@@ -84,14 +86,14 @@ export async function POST(req: NextRequest) {
           preferredTime: booking.preferredTime,
           peopleCount: booking.peopleCount,
           source: "website",
-          leadSource: "Monk Podcast Studio Website",
+          leadSource: "Monk Podcast Studio",
           leadId: booking._id.toString(),
           submittedAt: new Date().toISOString(),
         }),
         signal: AbortSignal.timeout(8000),
       });
     } catch (webhookError) {
-      console.error("CRM booking webhook request failed:", webhookError);
+      console.error("[CRM] Booking webhook request failed:", webhookError);
       return NextResponse.json(
         { success: false, message: "Your booking was saved, but could not be forwarded right now. Please contact us directly." },
         { status: 502 }
@@ -112,14 +114,26 @@ export async function POST(req: NextRequest) {
         : undefined;
     const webhookReportedFailure =
       webhookResultObject?.success === false ||
+      webhookResultObject?.ok === false ||
       ["error", "failed"].includes(String(webhookResultObject?.status).toLowerCase()) ||
       Boolean(webhookResultObject?.error);
+    const webhookRequestId = webhookResponse.headers.get("x-request-id");
+    const webhookLeadId =
+      typeof webhookResultObject?.leadId === "string"
+        ? webhookResultObject.leadId
+        : typeof webhookResultObject?.id === "string"
+          ? webhookResultObject.id
+          : undefined;
+
+    console.log(`[CRM] Booking webhook response status: ${webhookResponse.status}`);
+    if (webhookRequestId) console.log(`[CRM] Booking webhook request-id: ${webhookRequestId}`);
+    if (webhookLeadId) console.log(`[CRM] Booking webhook lead-id: ${webhookLeadId}`);
 
     if (!webhookResponse.ok || webhookReportedFailure) {
-      console.error("CRM webhook rejected booking:", {
+      console.error("[CRM] Booking webhook rejected the booking", {
         status: webhookResponse.status,
         contentType: webhookResponse.headers.get("content-type"),
-        requestId: webhookResponse.headers.get("x-request-id"),
+        requestId: webhookRequestId,
       });
       return NextResponse.json(
         { success: false, message: "Your booking was saved, but could not be forwarded right now. Please contact us directly." },
@@ -127,11 +141,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.info("CRM webhook accepted booking:", {
-      status: webhookResponse.status,
-      contentType: webhookResponse.headers.get("content-type"),
-      requestId: webhookResponse.headers.get("x-request-id"),
-    });
+    console.log("[CRM] Booking webhook accepted booking");
 
     return NextResponse.json(
       {

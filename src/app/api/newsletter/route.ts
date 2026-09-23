@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
 
     if (!webhookUrl) {
-      console.error("PICKMYAI_WEBHOOK_URL is not configured");
+      console.error("[CRM] PICKMYAI_WEBHOOK_URL is not configured");
       return NextResponse.json(
         { success: false, message: "Subscription delivery is temporarily unavailable. Please try again later." },
         { status: 500 }
@@ -63,6 +63,8 @@ export async function POST(req: NextRequest) {
       subscribedAt: new Date(),
     });
 
+    console.log("[CRM] Newsletter webhook starting");
+
     let webhookResponse: Response;
     try {
       webhookResponse = await fetch(webhookUrl, {
@@ -81,14 +83,14 @@ export async function POST(req: NextRequest) {
           message: `Newsletter signup from ${name || "website visitor"}`,
           notes: `Newsletter signup from ${name || "website visitor"}`,
           source: "website",
-          leadSource: "Monk Podcast Studio Website",
+          leadSource: "Monk Podcast Studio",
           leadId: newSubscriber._id.toString(),
           submittedAt: new Date().toISOString(),
         }),
         signal: AbortSignal.timeout(8000),
       });
     } catch (webhookError) {
-      console.error("CRM newsletter webhook request failed:", webhookError);
+      console.error("[CRM] Newsletter webhook request failed:", webhookError);
       return NextResponse.json(
         { success: false, message: "Your subscription was saved, but could not be forwarded to our CRM." },
         { status: 502 }
@@ -109,14 +111,26 @@ export async function POST(req: NextRequest) {
         : undefined;
     const webhookReportedFailure =
       webhookResultObject?.success === false ||
+      webhookResultObject?.ok === false ||
       ["error", "failed"].includes(String(webhookResultObject?.status).toLowerCase()) ||
       Boolean(webhookResultObject?.error);
+    const webhookRequestId = webhookResponse.headers.get("x-request-id");
+    const webhookLeadId =
+      typeof webhookResultObject?.leadId === "string"
+        ? webhookResultObject.leadId
+        : typeof webhookResultObject?.id === "string"
+          ? webhookResultObject.id
+          : undefined;
+
+    console.log(`[CRM] Newsletter webhook response status: ${webhookResponse.status}`);
+    if (webhookRequestId) console.log(`[CRM] Newsletter webhook request-id: ${webhookRequestId}`);
+    if (webhookLeadId) console.log(`[CRM] Newsletter webhook lead-id: ${webhookLeadId}`);
 
     if (!webhookResponse.ok || webhookReportedFailure) {
-      console.error("CRM webhook rejected newsletter signup:", {
+      console.error("[CRM] Newsletter webhook rejected the signup", {
         status: webhookResponse.status,
         contentType: webhookResponse.headers.get("content-type"),
-        requestId: webhookResponse.headers.get("x-request-id"),
+        requestId: webhookRequestId,
       });
       return NextResponse.json(
         { success: false, message: "Your subscription was saved, but could not be forwarded to our CRM." },
@@ -124,11 +138,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.info("CRM webhook accepted newsletter signup:", {
-      status: webhookResponse.status,
-      contentType: webhookResponse.headers.get("content-type"),
-      requestId: webhookResponse.headers.get("x-request-id"),
-    });
+    console.log("[CRM] Newsletter webhook accepted signup");
 
     return NextResponse.json(
       {

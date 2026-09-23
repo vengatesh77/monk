@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
 
     if (!webhookUrl) {
-      console.error("PICKMYAI_WEBHOOK_URL is not configured");
+      console.error("[CRM] PICKMYAI_WEBHOOK_URL is not configured");
       return NextResponse.json(
         { success: false, message: "Form delivery is temporarily unavailable. Please try again later." },
         { status: 500 }
@@ -63,6 +63,8 @@ export async function POST(req: NextRequest) {
       subject,
       message,
     });
+
+    console.log("[CRM] Contact webhook starting");
 
     let webhookResponse: Response;
     try {
@@ -82,14 +84,14 @@ export async function POST(req: NextRequest) {
           message,
           notes: message,
           source: "website",
-          leadSource: "Monk Podcast Studio Website",
+          leadSource: "Monk Podcast Studio",
           leadId: contact._id.toString(),
           submittedAt: new Date().toISOString(),
         }),
         signal: AbortSignal.timeout(8000),
       });
     } catch (webhookError) {
-      console.error("CRM webhook request failed:", webhookError);
+      console.error("[CRM] Contact webhook request failed:", webhookError);
       return NextResponse.json(
         { success: false, message: "We received your message, but could not forward it right now. Please try again later." },
         { status: 502 }
@@ -110,14 +112,26 @@ export async function POST(req: NextRequest) {
         : undefined;
     const webhookReportedFailure =
       webhookResultObject?.success === false ||
+      webhookResultObject?.ok === false ||
       ["error", "failed"].includes(String(webhookResultObject?.status).toLowerCase()) ||
       Boolean(webhookResultObject?.error);
+    const webhookRequestId = webhookResponse.headers.get("x-request-id");
+    const webhookLeadId =
+      typeof webhookResultObject?.leadId === "string"
+        ? webhookResultObject.leadId
+        : typeof webhookResultObject?.id === "string"
+          ? webhookResultObject.id
+          : undefined;
+
+    console.log(`[CRM] Contact webhook response status: ${webhookResponse.status}`);
+    if (webhookRequestId) console.log(`[CRM] Contact webhook request-id: ${webhookRequestId}`);
+    if (webhookLeadId) console.log(`[CRM] Contact webhook lead-id: ${webhookLeadId}`);
 
     if (!webhookResponse.ok || webhookReportedFailure) {
-      console.error("CRM webhook rejected the contact:", {
+      console.error("[CRM] Contact webhook rejected the contact", {
         status: webhookResponse.status,
         contentType: webhookResponse.headers.get("content-type"),
-        requestId: webhookResponse.headers.get("x-request-id"),
+        requestId: webhookRequestId,
       });
       return NextResponse.json(
         { success: false, message: "We received your message, but could not forward it right now. Please try again later." },
@@ -125,11 +139,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.info("CRM webhook accepted contact:", {
-      status: webhookResponse.status,
-      contentType: webhookResponse.headers.get("content-type"),
-      requestId: webhookResponse.headers.get("x-request-id"),
-    });
+    console.log("[CRM] Contact webhook accepted contact");
 
     return NextResponse.json(
       {

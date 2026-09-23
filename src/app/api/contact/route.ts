@@ -53,6 +53,29 @@ export async function POST(req: NextRequest) {
       message,
     });
 
+    try {
+      await fetch(
+        "https://api.pickmyaiagent.com/api/crm/integrations/inbound/universal_webhook/PyINCUcQ3jEyveMDKFRgRQ",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email: email.toLowerCase(),
+            phone,
+            subject,
+            message,
+            source: "Monk Podcast Studio Website",
+            leadId: contact._id.toString(),
+            submittedAt: new Date().toISOString(),
+          }),
+          signal: AbortSignal.timeout(8000),
+        }
+      );
+    } catch (webhookError) {
+      console.error("CRM webhook error:", webhookError);
+    }
+
     return NextResponse.json(
       {
         success: true,

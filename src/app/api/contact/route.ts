@@ -79,7 +79,6 @@ export async function POST(req: NextRequest) {
           phoneNumber: phone,
           contactNumber: phone,
           mobile: phone,
-          subject,
           message,
           notes: message,
           source: "website",

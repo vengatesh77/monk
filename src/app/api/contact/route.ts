@@ -15,6 +15,8 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, "Message is required"),
 });
 
+export const runtime = "nodejs";
+
 // POST /api/contact — Submit a contact form
 export async function POST(req: NextRequest) {
   try {
@@ -42,6 +44,15 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, email, phone, subject, message } = parsed.data;
+    const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
+
+    if (!webhookUrl) {
+      console.error("PICKMYAI_WEBHOOK_URL is not configured");
+      return NextResponse.json(
+        { success: false, message: "Form delivery is temporarily unavailable. Please try again later." },
+        { status: 500 }
+      );
+    }
 
     // Save contact inquiry directly to MongoDB Atlas
     await connectDB();
@@ -53,28 +64,63 @@ export async function POST(req: NextRequest) {
       message,
     });
 
+    let webhookResponse: Response;
     try {
-      await fetch(
-        "https://api.pickmyaiagent.com/api/crm/integrations/inbound/universal_webhook/PyINCUcQ3jEyveMDKFRgRQ",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            email: email.toLowerCase(),
-            phone,
-            subject,
-            message,
-            source: "Monk Podcast Studio Website",
-            leadId: contact._id.toString(),
-            submittedAt: new Date().toISOString(),
-          }),
-          signal: AbortSignal.timeout(8000),
-        }
-      );
+      webhookResponse = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email: email.toLowerCase(),
+          phone,
+          subject,
+          message,
+          source: "Monk Podcast Studio Website",
+          leadId: contact._id.toString(),
+          submittedAt: new Date().toISOString(),
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
     } catch (webhookError) {
-      console.error("CRM webhook error:", webhookError);
+      console.error("CRM webhook request failed:", webhookError);
+      return NextResponse.json(
+        { success: false, message: "We received your message, but could not forward it right now. Please try again later." },
+        { status: 502 }
+      );
     }
+
+    const webhookResponseText = await webhookResponse.text();
+    let webhookResult: unknown;
+    try {
+      webhookResult = JSON.parse(webhookResponseText);
+    } catch {
+      webhookResult = undefined;
+    }
+
+    const webhookResultObject =
+      typeof webhookResult === "object" && webhookResult !== null
+        ? (webhookResult as Record<string, unknown>)
+        : undefined;
+    const webhookReportedFailure =
+      webhookResultObject?.success === false ||
+      ["error", "failed"].includes(String(webhookResultObject?.status).toLowerCase()) ||
+      Boolean(webhookResultObject?.error);
+
+    if (!webhookResponse.ok || webhookReportedFailure) {
+      console.error("CRM webhook rejected the contact:", {
+        status: webhookResponse.status,
+        contentType: webhookResponse.headers.get("content-type"),
+      });
+      return NextResponse.json(
+        { success: false, message: "We received your message, but could not forward it right now. Please try again later." },
+        { status: 502 }
+      );
+    }
+
+    console.info("CRM webhook accepted contact:", {
+      status: webhookResponse.status,
+      contentType: webhookResponse.headers.get("content-type"),
+    });
 
     return NextResponse.json(
       {

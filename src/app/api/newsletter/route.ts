@@ -70,11 +70,19 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name || "Newsletter subscriber",
+          firstName: name || "Newsletter subscriber",
+          fullName: name || "Newsletter subscriber",
           email,
+          emailAddress: email,
           phone,
+          phoneNumber: phone,
+          contactNumber: phone,
+          mobile: phone,
           subject: "Newsletter signup",
           message: "Newsletter signup submitted through the website.",
-          source: "Monk Podcast Studio Website",
+          notes: "Newsletter signup submitted through the website.",
+          source: "website",
+          leadSource: "Monk Podcast Studio Website",
           leadId: newSubscriber._id.toString(),
           submittedAt: new Date().toISOString(),
         }),
@@ -109,6 +117,7 @@ export async function POST(req: NextRequest) {
       console.error("CRM webhook rejected newsletter signup:", {
         status: webhookResponse.status,
         contentType: webhookResponse.headers.get("content-type"),
+        requestId: webhookResponse.headers.get("x-request-id"),
       });
       return NextResponse.json(
         { success: false, message: "Your subscription was saved, but could not be forwarded to our CRM." },
@@ -119,6 +128,7 @@ export async function POST(req: NextRequest) {
     console.info("CRM webhook accepted newsletter signup:", {
       status: webhookResponse.status,
       contentType: webhookResponse.headers.get("content-type"),
+      requestId: webhookResponse.headers.get("x-request-id"),
     });
 
     return NextResponse.json(

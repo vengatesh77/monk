@@ -68,15 +68,23 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: booking.name,
+          firstName: booking.name,
+          fullName: booking.name,
           email: booking.email.toLowerCase(),
+          emailAddress: booking.email.toLowerCase(),
           phone: booking.phone,
+          phoneNumber: booking.phone,
+          contactNumber: booking.phone,
+          mobile: booking.phone,
           subject: `Booking request - ${booking.service}`,
           message: booking.message || `Booking request for ${booking.service}.`,
+          notes: booking.message || `Booking request for ${booking.service}.`,
           service: booking.service,
           preferredDate: booking.preferredDate.toISOString(),
           preferredTime: booking.preferredTime,
           peopleCount: booking.peopleCount,
-          source: "Monk Podcast Studio Website",
+          source: "website",
+          leadSource: "Monk Podcast Studio Website",
           leadId: booking._id.toString(),
           submittedAt: new Date().toISOString(),
         }),
@@ -111,6 +119,7 @@ export async function POST(req: NextRequest) {
       console.error("CRM webhook rejected booking:", {
         status: webhookResponse.status,
         contentType: webhookResponse.headers.get("content-type"),
+        requestId: webhookResponse.headers.get("x-request-id"),
       });
       return NextResponse.json(
         { success: false, message: "Your booking was saved, but could not be forwarded right now. Please contact us directly." },
@@ -121,6 +130,7 @@ export async function POST(req: NextRequest) {
     console.info("CRM webhook accepted booking:", {
       status: webhookResponse.status,
       contentType: webhookResponse.headers.get("content-type"),
+      requestId: webhookResponse.headers.get("x-request-id"),
     });
 
     return NextResponse.json(

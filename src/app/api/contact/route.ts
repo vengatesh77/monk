@@ -71,11 +71,19 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
+          firstName: name,
+          fullName: name,
           email: email.toLowerCase(),
+          emailAddress: email.toLowerCase(),
           phone,
+          phoneNumber: phone,
+          contactNumber: phone,
+          mobile: phone,
           subject,
           message,
-          source: "Monk Podcast Studio Website",
+          notes: message,
+          source: "website",
+          leadSource: "Monk Podcast Studio Website",
           leadId: contact._id.toString(),
           submittedAt: new Date().toISOString(),
         }),
@@ -110,6 +118,7 @@ export async function POST(req: NextRequest) {
       console.error("CRM webhook rejected the contact:", {
         status: webhookResponse.status,
         contentType: webhookResponse.headers.get("content-type"),
+        requestId: webhookResponse.headers.get("x-request-id"),
       });
       return NextResponse.json(
         { success: false, message: "We received your message, but could not forward it right now. Please try again later." },
@@ -120,6 +129,7 @@ export async function POST(req: NextRequest) {
     console.info("CRM webhook accepted contact:", {
       status: webhookResponse.status,
       contentType: webhookResponse.headers.get("content-type"),
+      requestId: webhookResponse.headers.get("x-request-id"),
     });
 
     return NextResponse.json(

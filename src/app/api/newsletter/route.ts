@@ -5,6 +5,8 @@ import { z } from "zod";
 
 const newsletterSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address"),
+  name: z.string().trim().max(100).optional().default(""),
+  phone: z.string().trim().max(25).optional().default(""),
 });
 
 // POST /api/newsletter — Subscribe to newsletter
@@ -13,7 +15,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const rawEmail = (body.email || "").toString().trim().toLowerCase();
-    const parsed = newsletterSchema.safeParse({ email: rawEmail });
+    const parsed = newsletterSchema.safeParse({
+      email: rawEmail,
+      name: (body.name || "").toString().trim(),
+      phone: (body.contactNumber || body.phone || "").toString().trim(),
+    });
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -25,7 +31,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email } = parsed.data;
+    const { email, name, phone } = parsed.data;
+    const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
+
+    if (!webhookUrl) {
+      console.error("PICKMYAI_WEBHOOK_URL is not configured");
+      return NextResponse.json(
+        { success: false, message: "Subscription delivery is temporarily unavailable. Please try again later." },
+        { status: 500 }
+      );
+    }
 
     await connectDB();
 
@@ -48,6 +63,64 @@ export async function POST(req: NextRequest) {
       subscribedAt: new Date(),
     });
 
+    let webhookResponse: Response;
+    try {
+      webhookResponse = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name || "Newsletter subscriber",
+          email,
+          phone,
+          subject: "Newsletter signup",
+          message: "Newsletter signup submitted through the website.",
+          source: "Monk Podcast Studio Website",
+          leadId: newSubscriber._id.toString(),
+          submittedAt: new Date().toISOString(),
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch (webhookError) {
+      console.error("CRM newsletter webhook request failed:", webhookError);
+      return NextResponse.json(
+        { success: false, message: "Your subscription was saved, but could not be forwarded to our CRM." },
+        { status: 502 }
+      );
+    }
+
+    const webhookResponseText = await webhookResponse.text();
+    let webhookResult: unknown;
+    try {
+      webhookResult = JSON.parse(webhookResponseText);
+    } catch {
+      webhookResult = undefined;
+    }
+
+    const webhookResultObject =
+      typeof webhookResult === "object" && webhookResult !== null
+        ? (webhookResult as Record<string, unknown>)
+        : undefined;
+    const webhookReportedFailure =
+      webhookResultObject?.success === false ||
+      ["error", "failed"].includes(String(webhookResultObject?.status).toLowerCase()) ||
+      Boolean(webhookResultObject?.error);
+
+    if (!webhookResponse.ok || webhookReportedFailure) {
+      console.error("CRM webhook rejected newsletter signup:", {
+        status: webhookResponse.status,
+        contentType: webhookResponse.headers.get("content-type"),
+      });
+      return NextResponse.json(
+        { success: false, message: "Your subscription was saved, but could not be forwarded to our CRM." },
+        { status: 502 }
+      );
+    }
+
+    console.info("CRM webhook accepted newsletter signup:", {
+      status: webhookResponse.status,
+      contentType: webhookResponse.headers.get("content-type"),
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -61,7 +134,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Newsletter POST error:", error);
     return NextResponse.json(
       {
@@ -104,7 +177,7 @@ export async function GET(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Newsletter GET error:", error);
     return NextResponse.json(
       {

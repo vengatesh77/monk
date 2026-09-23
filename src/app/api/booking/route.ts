@@ -46,10 +46,81 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
+    if (!webhookUrl) {
+      console.error("PICKMYAI_WEBHOOK_URL is not configured");
+      return NextResponse.json(
+        { success: false, message: "Booking delivery is temporarily unavailable. Please try again later." },
+        { status: 500 }
+      );
+    }
+
     await connectDB();
     const booking = await Booking.create({
       ...parsed.data,
       preferredDate: new Date(parsed.data.preferredDate),
+    });
+
+    let webhookResponse: Response;
+    try {
+      webhookResponse = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: booking.name,
+          email: booking.email.toLowerCase(),
+          phone: booking.phone,
+          subject: `Booking request - ${booking.service}`,
+          message: booking.message || `Booking request for ${booking.service}.`,
+          service: booking.service,
+          preferredDate: booking.preferredDate.toISOString(),
+          preferredTime: booking.preferredTime,
+          peopleCount: booking.peopleCount,
+          source: "Monk Podcast Studio Website",
+          leadId: booking._id.toString(),
+          submittedAt: new Date().toISOString(),
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch (webhookError) {
+      console.error("CRM booking webhook request failed:", webhookError);
+      return NextResponse.json(
+        { success: false, message: "Your booking was saved, but could not be forwarded right now. Please contact us directly." },
+        { status: 502 }
+      );
+    }
+
+    const webhookResponseText = await webhookResponse.text();
+    let webhookResult: unknown;
+    try {
+      webhookResult = JSON.parse(webhookResponseText);
+    } catch {
+      webhookResult = undefined;
+    }
+
+    const webhookResultObject =
+      typeof webhookResult === "object" && webhookResult !== null
+        ? (webhookResult as Record<string, unknown>)
+        : undefined;
+    const webhookReportedFailure =
+      webhookResultObject?.success === false ||
+      ["error", "failed"].includes(String(webhookResultObject?.status).toLowerCase()) ||
+      Boolean(webhookResultObject?.error);
+
+    if (!webhookResponse.ok || webhookReportedFailure) {
+      console.error("CRM webhook rejected booking:", {
+        status: webhookResponse.status,
+        contentType: webhookResponse.headers.get("content-type"),
+      });
+      return NextResponse.json(
+        { success: false, message: "Your booking was saved, but could not be forwarded right now. Please contact us directly." },
+        { status: 502 }
+      );
+    }
+
+    console.info("CRM webhook accepted booking:", {
+      status: webhookResponse.status,
+      contentType: webhookResponse.headers.get("content-type"),
     });
 
     return NextResponse.json(

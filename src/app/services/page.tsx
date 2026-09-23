@@ -9,18 +9,26 @@ export default function ServicesPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || isLoading) return;
 
     setIsLoading(true);
+    setSubmissionError("");
 
     try {
-      const res = await fetch("/api/newsletter", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, contactNumber, email }),
+        body: JSON.stringify({
+          name,
+          contactNumber,
+          email,
+          subject: "Services Inquiry",
+          message: "Inquiry submitted from the services page.",
+        }),
       });
 
       const data = await res.json();
@@ -30,9 +38,11 @@ export default function ServicesPage() {
         setName("");
         setContactNumber("");
         setEmail("");
+      } else {
+        setSubmissionError(data.message || "Unable to send your inquiry. Please try again.");
       }
     } catch {
-      // Handle error quietly or keep existing state
+      setSubmissionError("Unable to send your inquiry. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -403,6 +413,7 @@ export default function ServicesPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="text-left space-y-6">
+              {submissionError && <p className="text-red-200 text-sm">{submissionError}</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label

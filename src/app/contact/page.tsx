@@ -4,12 +4,12 @@ import ContactForm from "@/components/forms/ContactForm";
 import Image from "next/image";
 
 const hoursData = [
-  { day: "Monday", time: "(8am - 8pm)" },
-  { day: "Tuesday", time: "(8am - 8pm)" },
-  { day: "Wednesday", time: "(8am - 8pm)" },
-  { day: "Thursday", time: "(8am - 8pm)" },
-  { day: "Friday", time: "(8am - 8pm)" },
-  { day: "Saturday", time: "(8am - 8pm)" },
+  { day: "Monday", time: "(9:30am - 6:30pm)" },
+  { day: "Tuesday", time: "(9:30am - 6:30pm)" },
+  { day: "Wednesday", time: "(9:30am - 6:30pm)" },
+  { day: "Thursday", time: "(9:30am - 6:30pm)" },
+  { day: "Friday", time: "(9:30am - 6:30pm)" },
+  { day: "Saturday", time: "(9:30am - 6:30pm)" },
 ];
 
 export default function ContactPage() {
@@ -103,7 +103,7 @@ export default function ContactPage() {
                 fontFamily: "'Montserrat', sans-serif",
               }}
             >
-              Visit us at 3rd Floor, Sasha Building, 130, E Venkatasamy Road, R.S. Puram, Coimbatore, Tamil Nadu 641002.”
+              Visit us at 3rd Floor, Sasha Building, 130 East Venkatasamy Road, R.S.Puram, Coimbatore - 641002, Tamil Nadu, India.”
             </p>
           </div>
 
@@ -154,7 +154,7 @@ export default function ContactPage() {
           className="shadow-sm border border-gray-100"
         >
           <iframe
-            src="https://maps.google.com/maps?q=3rd%20floor,%20Sasha%20Building,%20130,%20E%20Venkatasamy%20Rd,%20R.S.%20Puram,%20Coimbatore,%20Tamil%20Nadu%20641002&t=m&z=13&ie=UTF8&output=embed"
+            src="https://maps.google.com/maps?q=3rd%20floor,%20Sasha%20Building,%20130%20East%20Venkatasamy%20Road,%20R.S.Puram,%20Coimbatore,%20Tamil%20Nadu%20641002&t=m&z=13&ie=UTF8&output=embed"
             width="100%"
             height="100%"
             style={{ border: 0 }}

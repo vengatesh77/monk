@@ -38,7 +38,7 @@ export default function CTASection() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
           <Link href="/contact" className="btn-primary group w-full sm:w-auto">
-            Book a Session
+            Enquire Now
             <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link href="/contact" className="btn-outline group w-full sm:w-auto">

@@ -136,7 +136,7 @@ export default function NewsletterSection() {
                     Submitting...
                   </span>
                 ) : (
-                  "Submit Your Inquiry"
+                  "Submit the Enquiry"
                 )}
               </button>
             </form>

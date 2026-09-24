@@ -23,7 +23,7 @@ export default function WhatsAppButton() {
       aria-label="Chat on WhatsApp"
       id="floating-whatsapp-btn"
     >
-      <div className="relative w-14 h-14 rounded-full overflow-hidden drop-shadow-lg">
+      <div className="relative w-14 h-14 drop-shadow-lg">
         <Image
           src="/images/whatsapp.svg"
           alt="WhatsApp Logo"

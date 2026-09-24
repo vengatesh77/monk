@@ -268,7 +268,7 @@ export default function ServicesPage() {
                   fontFamily: "'Montserrat', sans-serif",
                 }}
               >
-                You can reach us easily through the contact number provided call, WhatsApp, or visit our studio directly in Coimbatore.
+                You can reach us easily through the contact number provided, call or WhatsApp us at +91 90806 44504, or visit our studio directly in Coimbatore.
               </p>
             </div>
 
@@ -296,7 +296,7 @@ export default function ServicesPage() {
                   fontFamily: "'Montserrat', sans-serif",
                 }}
               >
-                Our studio is located in R.S. Puram, Coimbatore. Easily accessible for all clients. Visit us at 3rd Floor, Sasha Building, 130, E Venkatasamy Road, R.S. Puram, Coimbatore, Tamil Nadu 641002.
+                Our studio is located in R.S.Puram, Coimbatore. Easily accessible for all clients. Visit us at 3rd Floor, Sasha Building, 130 East Venkatasamy Road, R.S.Puram, Coimbatore - 641002, Tamil Nadu, India.
               </p>
             </div>
 
@@ -523,18 +523,20 @@ export default function ServicesPage() {
                   type="submit"
                   disabled={isLoading || !email || !name || !contactNumber}
                   style={{
-                    background: "transparent",
+                    background: "#ffffff",
                     border: "none",
-                    color: "#ffffff",
+                    borderRadius: "10px",
+                    padding: "14px 40px",
+                    color: "#0d141a",
                     fontSize: "16px",
-                    fontWeight: 500,
+                    fontWeight: 600,
                     cursor: "pointer",
                     fontFamily: "'Montserrat', sans-serif",
-                    textDecoration: "none",
+                    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.25)",
                   }}
-                  className="hover:underline disabled:opacity-60"
+                  className="hover:bg-gray-100 hover:scale-105 transition-all duration-200 disabled:opacity-60 disabled:hover:scale-100"
                 >
-                  {isLoading ? "Submitting..." : "Send Your Message"}
+                  {isLoading ? "Submitting..." : "Submit the Enquiry"}
                 </button>
               </div>
             </form>

@@ -32,13 +32,7 @@ export default function Hero() {
             href="/contact"
             className="border-2 border-white text-white hover:bg-white hover:text-[#0d141a] font-medium py-3.5 px-9 rounded-full text-base transition-all duration-300 w-full sm:w-auto inline-flex items-center justify-center min-h-[48px] shadow-lg"
           >
-            Book a Session
-          </Link>
-          <Link
-            href="/services"
-            className="border-2 border-white text-white hover:bg-white hover:text-[#0d141a] font-medium py-3.5 px-9 rounded-full text-base transition-all duration-300 w-full sm:w-auto inline-flex items-center justify-center min-h-[48px] shadow-lg"
-          >
-            Explore Packages
+            Enquire Now
           </Link>
         </div>
       </div>

@@ -71,9 +71,10 @@ export default function Testimonials() {
             </div>
           </div>
 
-          {/* Bottom Row: 1 Centered Card (Gowtham) */}
-          <div className="max-w-3xl mx-auto w-full">
-            <div className="bg-[#F5F5F5] p-8 md:p-10 flex flex-col justify-between">
+          {/* Bottom Row: 2 Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+            {/* Card 3: Gowtham */}
+            <div className="bg-[#F5F5F5] p-8 md:p-10 flex flex-col justify-between h-full">
               <div>
                 <div className="text-[#0d141a] font-bold text-lg tracking-widest mb-4">
                   ★★★★★
@@ -89,6 +90,32 @@ export default function Testimonials() {
                 </div>
                 <div className="text-[#727586] text-sm mt-0.5">
                   R.S. Puram
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Elangovan */}
+            <div className="bg-[#F5F5F5] p-8 md:p-10 flex flex-col justify-between h-full">
+              <div>
+                <div className="text-[#0d141a] font-bold text-lg tracking-widest mb-4">
+                  ★★★★★
+                </div>
+                <p className="text-[#727586] text-sm md:text-base leading-relaxed mb-8">
+                  Monk Podcast Studio transformed our vision into an engaging video for ads. Their creativity and professionalism made the process seamless and enjoyable.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-200">
+                  <Image
+                    src="/images/brands/testimonial-avatar.jpg"
+                    alt="Elangovan Avatar"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="font-bold text-[#0d141a] text-base leading-tight">
+                  Elangovan
                 </div>
               </div>
             </div>

@@ -18,6 +18,28 @@ export default function Footer() {
             <p className="text-white text-sm sm:text-base leading-relaxed max-w-sm">
               Turning your ideas into impactful podcasts and stories.
             </p>
+            <a
+              href="https://www.instagram.com/monkpodcaststudio/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-600 text-white hover:text-gray-300 hover:border-gray-400 hover:scale-110 transition-all duration-200"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-5 h-5"
+              >
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+              </svg>
+            </a>
           </div>
 
           {/* Column 2: CONNECT */}

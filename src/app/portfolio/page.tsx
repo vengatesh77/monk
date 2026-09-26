@@ -218,7 +218,7 @@ export default function PortfolioPage() {
             className="inline-flex items-center justify-center border border-[#0d141a] rounded-full px-9 py-3.5 text-base font-normal text-[#0d141a] hover:bg-[#0d141a] hover:text-white transition-colors duration-200 whitespace-nowrap"
             style={{ fontFamily: "'Montserrat', sans-serif" }}
           >
-            Learn More
+            Enquire Now
           </Link>
         </div>
       </section>

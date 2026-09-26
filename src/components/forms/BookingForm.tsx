@@ -12,8 +12,6 @@ const bookingSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   phone: z.string().min(10, "Phone must be at least 10 digits"),
   service: z.string().min(1, "Please select a service"),
-  preferredDate: z.string().min(1, "Please select a date"),
-  preferredTime: z.string().min(1, "Please select a time"),
   peopleCount: z.coerce.number().min(1, "At least 1 person required"),
   message: z.string().optional(),
 });
@@ -23,24 +21,9 @@ type BookingFormValues = {
   email: string;
   phone: string;
   service: string;
-  preferredDate: string;
-  preferredTime: string;
   peopleCount: number;
   message?: string;
 };
-
-const timeSlots = [
-  "09:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "01:00 PM",
-  "02:00 PM",
-  "03:00 PM",
-  "04:00 PM",
-  "05:00 PM",
-  "06:00 PM",
-];
 
 export default function BookingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -140,7 +123,7 @@ export default function BookingForm() {
             <input
               id="booking-phone"
               type="tel"
-              placeholder="+91 90806 44504"
+              placeholder="Enter your Number"
               {...register("phone")}
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#111111] placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
               disabled={isSubmitting}
@@ -197,59 +180,7 @@ export default function BookingForm() {
           )}
         </div>
 
-        {/* Row 4: Preferred Date & Preferred Time */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="booking-date"
-              className="block text-sm font-semibold text-[#222222] mb-1.5"
-            >
-              Preferred Date<span className="text-red-500">*</span>
-            </label>
-            <input
-              id="booking-date"
-              type="date"
-              {...register("preferredDate")}
-              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#111111] focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
-              disabled={isSubmitting}
-              min={new Date().toISOString().split("T")[0]}
-            />
-            {errors.preferredDate && (
-              <p className="mt-1 text-red-500 text-xs">
-                {errors.preferredDate.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="booking-time"
-              className="block text-sm font-semibold text-[#222222] mb-1.5"
-            >
-              Preferred Time<span className="text-red-500">*</span>
-            </label>
-            <select
-              id="booking-time"
-              {...register("preferredTime")}
-              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#111111] focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
-              disabled={isSubmitting}
-            >
-              <option value="">Select time slot</option>
-              {timeSlots.map((slot) => (
-                <option key={slot} value={slot}>
-                  {slot}
-                </option>
-              ))}
-            </select>
-            {errors.preferredTime && (
-              <p className="mt-1 text-red-500 text-xs">
-                {errors.preferredTime.message}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Row 5: Brief Description / Notes */}
+        {/* Row 4: Brief Description / Notes */}
         <div>
           <label
             htmlFor="booking-message"

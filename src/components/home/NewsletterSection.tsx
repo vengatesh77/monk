@@ -7,6 +7,7 @@ export default function NewsletterSection() {
   const [name, setName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [notes, setNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -22,7 +23,7 @@ export default function NewsletterSection() {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, contactNumber, email }),
+        body: JSON.stringify({ name, contactNumber, email, notes }),
       });
 
       const data = await res.json();
@@ -33,6 +34,7 @@ export default function NewsletterSection() {
         setName("");
         setContactNumber("");
         setEmail("");
+        setNotes("");
       } else {
         setStatus("error");
         setMessage(data.message || "Something went wrong. Please try again.");
@@ -121,6 +123,24 @@ export default function NewsletterSection() {
                   required
                   disabled={isLoading}
                   className="w-full bg-white border border-[#dadce0] rounded-xl px-4 py-3.5 text-sm text-[#0d141a] placeholder:text-gray-400 focus:outline-none focus:border-[#0d141a] focus:ring-1 focus:ring-[#0d141a] transition-all"
+                />
+              </div>
+
+              <div className="text-left">
+                <label
+                  htmlFor="newsletter-notes"
+                  className="block text-sm font-semibold text-[#0d141a] mb-2"
+                >
+                  Notes
+                </label>
+                <textarea
+                  id="newsletter-notes"
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Tell us about your requirements"
+                  disabled={isLoading}
+                  className="w-full bg-white border border-[#dadce0] rounded-xl px-4 py-3.5 text-sm text-[#0d141a] placeholder:text-gray-400 focus:outline-none focus:border-[#0d141a] focus:ring-1 focus:ring-[#0d141a] transition-all resize-none"
                 />
               </div>
 

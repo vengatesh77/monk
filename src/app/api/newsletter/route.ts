@@ -7,6 +7,7 @@ const newsletterSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address"),
   name: z.string().trim().max(100).optional().default(""),
   phone: z.string().trim().max(25).optional().default(""),
+  notes: z.string().trim().max(2000).optional().default(""),
 });
 
 // POST /api/newsletter — Subscribe to newsletter
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
       email: rawEmail,
       name: (body.name || "").toString().trim(),
       phone: (body.contactNumber || body.phone || "").toString().trim(),
+      notes: (body.notes || body.message || "").toString().trim(),
     });
 
     if (!parsed.success) {
@@ -31,7 +33,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, name, phone } = parsed.data;
+    const { email, name, phone, notes } = parsed.data;
     const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
 
     if (!webhookUrl) {
@@ -59,6 +61,9 @@ export async function POST(req: NextRequest) {
     // Save to newsletterSubscribers collection
     const newSubscriber = await NewsletterSubscriber.create({
       email,
+      name,
+      phone,
+      notes,
       status: "active",
       subscribedAt: new Date(),
     });
@@ -80,8 +85,12 @@ export async function POST(req: NextRequest) {
           phoneNumber: phone,
           contactNumber: phone,
           mobile: phone,
-          message: `Newsletter signup from ${name || "website visitor"}`,
-          notes: `Newsletter signup from ${name || "website visitor"}`,
+          message:
+            notes ||
+            `Newsletter signup from ${name || "website visitor"}`,
+          notes:
+            notes ||
+            `Newsletter signup from ${name || "website visitor"}`,
           source: "website",
           leadSource: "Monk Podcast Studio",
           leadId: newSubscriber._id.toString(),

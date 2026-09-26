@@ -7,6 +7,7 @@ export default function ServicesPage() {
   const [name, setName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [notes, setNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
@@ -27,7 +28,8 @@ export default function ServicesPage() {
           contactNumber,
           email,
           subject: "Services Inquiry",
-          message: "Inquiry submitted from the services page.",
+          message: notes || "Inquiry submitted from the services page.",
+          notes,
         }),
       });
 
@@ -38,6 +40,7 @@ export default function ServicesPage() {
         setName("");
         setContactNumber("");
         setEmail("");
+        setNotes("");
       } else {
         setSubmissionError(data.message || "Unable to send your inquiry. Please try again.");
       }
@@ -296,7 +299,7 @@ export default function ServicesPage() {
                   fontFamily: "'Montserrat', sans-serif",
                 }}
               >
-                Our studio is located in R.S.Puram, Coimbatore. Easily accessible for all clients. Visit us at 3rd Floor, Sasha Building, 130 East Venkatasamy Road, R.S.Puram, Coimbatore - 641002, Tamil Nadu, India.
+                Our studio is located in R.S.Puram, Coimbatore. Visit us at 3rd Floor, Sasha Building, 130 East Venkatasamy Road, R.S.Puram, Coimbatore - 641002, Tamil Nadu, India.
               </p>
             </div>
 
@@ -324,7 +327,7 @@ export default function ServicesPage() {
                   fontFamily: "'Montserrat', sans-serif",
                 }}
               >
-                Absolutely! You&apos;re welcome to visit and tour our studio before booking. Please give us a call or WhatsApp to schedule a convenient time for your visit.
+                Absolutely! You&apos;re welcome to visit and tour our studio before booking. Please give us a call or WhatsApp us at +91 90806 44504 to schedule a convenient time for your visit.
               </p>
             </div>
 
@@ -513,6 +516,40 @@ export default function ServicesPage() {
                     color: "#0d141a",
                     fontSize: "16px",
                     outline: "none",
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#ffffff",
+                    marginBottom: "8px",
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}
+                >
+                  Notes
+                </label>
+                <textarea
+                  rows={3}
+                  disabled={isLoading}
+                  placeholder="Tell us about your requirements"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "16px 20px",
+                    borderRadius: "10px",
+                    border: "1px solid #dadce0",
+                    background: "#ffffff",
+                    color: "#0d141a",
+                    fontSize: "16px",
+                    outline: "none",
+                    resize: "none",
                     fontFamily: "'Montserrat', sans-serif",
                   }}
                 />

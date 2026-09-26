@@ -12,6 +12,7 @@ const contactSchema = z.object({
     .min(5, "Please enter a valid phone number")
     .max(25, "Phone number too long"),
   subject: z.string().optional().default("General Contact Inquiry"),
+  service: z.string().trim().max(100).optional().default(""),
   message: z.string().trim().min(1, "Message is required"),
 });
 
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
       email: (body.email || "").toString().trim(),
       phone: (body.phone || body.contactNumber || "").toString().trim(),
       subject: (body.subject || "General Contact Inquiry").toString().trim(),
+      service: (body.service || "").toString().trim(),
       message: (body.message || "").toString().trim(),
     };
 
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, phone, subject, message } = parsed.data;
+    const { name, email, phone, subject, service, message } = parsed.data;
     const webhookUrl = process.env.PICKMYAI_WEBHOOK_URL;
 
     if (!webhookUrl) {
@@ -61,6 +63,7 @@ export async function POST(req: NextRequest) {
       email: email.toLowerCase(),
       phone,
       subject,
+      service,
       message,
     });
 
@@ -83,6 +86,10 @@ export async function POST(req: NextRequest) {
           mobile: phone,
           message,
           notes: message,
+          subject,
+          service,
+          serviceRequired: service,
+          interest: service,
           source: "website",
           leadSource: "Monk Podcast Studio",
           leadId: contact._id.toString(),

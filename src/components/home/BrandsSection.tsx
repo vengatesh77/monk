@@ -33,18 +33,18 @@ export default function BrandsSection() {
           Trusted by Leading Brands
         </h2>
 
-        <div className="flex flex-nowrap items-center justify-center gap-6 md:gap-10 overflow-x-auto">
+        <div className="flex flex-nowrap items-center justify-center gap-4 md:gap-8">
           {brands.map((brand) => (
             <div
               key={brand.src}
-              className="relative shrink-0 w-[200px] h-[150px] md:w-[240px] md:h-[170px] flex items-center justify-center"
+              className="relative flex-1 min-w-0 h-[110px] sm:h-[160px] md:h-[200px] lg:h-[230px] flex items-center justify-center"
             >
               <Image
                 src={brand.src}
                 alt={brand.alt}
                 fill
                 className="object-contain hover:scale-105 transition-transform duration-300"
-                sizes="(max-width: 768px) 200px, 240px"
+                sizes="(max-width: 768px) 16vw, 200px"
               />
             </div>
           ))}

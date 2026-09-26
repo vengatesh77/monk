@@ -103,7 +103,7 @@ export default function ContactPage() {
                 fontFamily: "'Montserrat', sans-serif",
               }}
             >
-              Visit us at 3rd Floor, Sasha Building, 130 East Venkatasamy Road, R.S.Puram, Coimbatore - 641002, Tamil Nadu, India.”
+              Visit us at 3rd Floor, Sasha Building, 130 East Venkatasamy Road, R.S.Puram, Coimbatore - 641002, Tamil Nadu, India.
             </p>
           </div>
 

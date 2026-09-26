@@ -9,12 +9,12 @@ export const metadata: Metadata = {
 };
 
 const hours = [
-  { day: "Monday", time: "(8am - 8pm)" },
-  { day: "Tuesday", time: "(8am - 8pm)" },
-  { day: "Wednesday", time: "(8am - 8pm)" },
-  { day: "Thursday", time: "(8am - 8pm)" },
-  { day: "Friday", time: "(8am - 8pm)" },
-  { day: "Saturday", time: "(8am - 8pm)" },
+  { day: "Monday", time: "(9:30am - 6:30pm)" },
+  { day: "Tuesday", time: "(9:30am - 6:30pm)" },
+  { day: "Wednesday", time: "(9:30am - 6:30pm)" },
+  { day: "Thursday", time: "(9:30am - 6:30pm)" },
+  { day: "Friday", time: "(9:30am - 6:30pm)" },
+  { day: "Saturday", time: "(9:30am - 6:30pm)" },
 ];
 
 export default function BookingPage() {

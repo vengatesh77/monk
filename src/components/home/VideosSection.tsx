@@ -1,8 +1,10 @@
+"use client";
+
 const videos = [
-  "/videos/work-2.mp4",
-  "/videos/work-3.mp4",
-  "/videos/work-4.mp4",
-  "/videos/work-5.mp4",
+  "/videos/bite-1.mp4",
+  "/videos/bite-2.mp4",
+  "/videos/bite-3.mp4",
+  "/videos/bite-4.mp4",
 ];
 
 export default function VideosSection() {
@@ -26,7 +28,7 @@ export default function VideosSection() {
             fontFamily: "'Montserrat', sans-serif",
           }}
         >
-          Watch Our Work in Action
+          Bites From Social Media
         </h2>
         <p
           style={{
@@ -45,6 +47,14 @@ export default function VideosSection() {
             <div
               key={src}
               className="relative rounded-2xl overflow-hidden bg-black/40 aspect-[9/16] sm:aspect-[3/4] lg:aspect-[9/16] transition-transform duration-300 ease-out hover:scale-110 hover:z-10 hover:shadow-2xl hover:shadow-black/60 cursor-pointer"
+              onMouseEnter={(e) => {
+                const video = e.currentTarget.querySelector("video");
+                if (video) void video.play();
+              }}
+              onMouseLeave={(e) => {
+                const video = e.currentTarget.querySelector("video");
+                if (video) video.pause();
+              }}
             >
               <video
                 src={src}

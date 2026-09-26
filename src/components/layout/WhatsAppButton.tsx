@@ -11,7 +11,7 @@ export default function WhatsAppButton() {
   }
   const whatsappNumber = "919080644504";
   const defaultMessage = encodeURIComponent(
-    "👋 Hi there! I'd like to inquire about booking a session at Monk Podcast Studio."
+    "👋 Hi there! Can I get more details about Monk Podcast Studio?"
   );
 
   return (

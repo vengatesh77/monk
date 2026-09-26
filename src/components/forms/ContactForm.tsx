@@ -10,6 +10,7 @@ const contactSchema = z.object({
   name: z.string().trim().min(1, "First name is required"),
   phone: z.string().trim().min(5, "Please enter a valid phone number"),
   email: z.string().trim().email("Please enter a valid email address"),
+  service: z.string().trim().min(1, "Please select a service"),
   message: z.string().trim().min(1, "Message is required"),
 });
 
@@ -17,8 +18,18 @@ type ContactFormValues = {
   name: string;
   phone: string;
   email: string;
+  service: string;
   message: string;
 };
+
+const serviceOptions = [
+  "Podcast Recording",
+  "Podcast Video",
+  "Video Production",
+  "Photography",
+  "Branding",
+  "Other",
+];
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -169,7 +180,7 @@ export default function ContactForm() {
           <input
             id="contact-phone"
             type="tel"
-            placeholder="+91 90806 44504"
+            placeholder="Enter your Number"
             {...register("phone")}
             style={{
               width: "100%",
@@ -224,6 +235,52 @@ export default function ContactForm() {
           />
           {errors.email && (
             <p className="mt-1 text-red-500 text-xs">{errors.email.message}</p>
+          )}
+        </div>
+
+        {/* Service Required* */}
+        <div>
+          <label
+            htmlFor="contact-service"
+            style={{
+              display: "block",
+              fontSize: "14px",
+              fontWeight: 500,
+              color: "#0d141a",
+              marginBottom: "8px",
+              fontFamily: "'Montserrat', sans-serif",
+            }}
+          >
+            Service Required*
+          </label>
+          <select
+            id="contact-service"
+            {...register("service")}
+            defaultValue=""
+            style={{
+              width: "100%",
+              background: "#ffffff",
+              border: "1px solid #b8c0cc",
+              borderRadius: "10px",
+              padding: "14px 16px",
+              fontSize: "16px",
+              color: "#0d141a",
+              outline: "none",
+              fontFamily: "'Montserrat', sans-serif",
+            }}
+            disabled={isSubmitting}
+          >
+            <option value="" disabled>
+              Select a service
+            </option>
+            {serviceOptions.map((service) => (
+              <option key={service} value={service}>
+                {service}
+              </option>
+            ))}
+          </select>
+          {errors.service && (
+            <p className="mt-1 text-red-500 text-xs">{errors.service.message}</p>
           )}
         </div>
 
